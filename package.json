@@ -1,0 +1,18 @@
+{
+  "name": "quychung-hardhat",
+  "version": "1.0.0",
+  "description": "Hardhat development environment for QuýChung treasury management",
+  "main": "hardhat.config.js",
+  "scripts": {
+    "node": "hardhat node",
+    "deploy": "hardhat run scripts/deploy-hardhat.js --network localhost",
+    "compile": "hardhat compile"
+  },
+  "keywords": ["hardhat", "ethereum", "blockchain", "treasury"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.27.0"
+  }
+}

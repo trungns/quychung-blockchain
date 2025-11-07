@@ -1,0 +1,158 @@
+.transaction-list {
+  width: 100%;
+}
+
+.empty-transactions {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+/* Table View (Desktop) */
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transaction-table thead {
+  background: #f9f9f9;
+}
+
+.transaction-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.transaction-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.transaction-row.income .amount-cell {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.transaction-row.expense .amount-cell {
+  color: #f44336;
+  font-weight: 600;
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.badge.income {
+  background: #E8F5E9;
+  color: #4CAF50;
+}
+
+.badge.expense {
+  background: #FFEBEE;
+  color: #f44336;
+}
+
+.date-cell {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.note-cell {
+  color: #666;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creator-cell {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.tx-hash {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #2196F3;
+  cursor: help;
+}
+
+.pending {
+  color: #FF9800;
+  font-size: 0.85rem;
+}
+
+/* Mobile View */
+.transaction-list-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .transaction-table {
+    display: none;
+  }
+
+  .transaction-list-mobile {
+    display: block;
+  }
+
+  .transaction-card {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border-left: 4px solid #ddd;
+  }
+
+  .transaction-card.income {
+    border-left-color: #4CAF50;
+  }
+
+  .transaction-card.expense {
+    border-left-color: #f44336;
+  }
+
+  .transaction-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .transaction-card .amount {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .transaction-card .amount.income {
+    color: #4CAF50;
+  }
+
+  .transaction-card .amount.expense {
+    color: #f44336;
+  }
+
+  .transaction-card-body .note {
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  .transaction-card-body .meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 5px;
+  }
+
+  .transaction-card-body .tx-info {
+    color: #2196F3;
+    font-size: 0.75rem;
+  }
+}

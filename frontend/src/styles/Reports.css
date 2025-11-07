@@ -1,0 +1,280 @@
+.reports-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.reports-header {
+  margin-bottom: 30px;
+}
+
+.reports-header h1 {
+  color: #1a202c;
+  margin: 15px 0;
+}
+
+.year-selector {
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.year-selector label {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.year-selector select {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.report-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.report-section h2 {
+  color: #1a202c;
+  margin: 0 0 20px 0;
+  font-size: 20px;
+}
+
+/* Yearly Summary */
+.yearly-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.yearly-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.yearly-card h3 {
+  margin: 0 0 16px 0;
+  color: #2d3748;
+  font-size: 18px;
+}
+
+.yearly-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.yearly-stats .stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.yearly-stats .stat.income {
+  background: #f0fdf4;
+  border-left: 4px solid #22c55e;
+}
+
+.yearly-stats .stat.expense {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+}
+
+.yearly-stats .stat.balance {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+}
+
+.yearly-stats .label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.yearly-stats .value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.yearly-stats .count {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Top Contributors */
+.contributors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contributor-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.contributor-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.1);
+}
+
+.contributor-item .rank {
+  font-size: 24px;
+  font-weight: 700;
+  color: #3b82f6;
+  min-width: 50px;
+  text-align: center;
+}
+
+.contributor-info {
+  flex: 1;
+}
+
+.contributor-info .name {
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 4px;
+}
+
+.contributor-info .email {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.contributor-stats {
+  text-align: right;
+}
+
+.contributor-stats .amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #22c55e;
+  margin-bottom: 4px;
+}
+
+.contributor-stats .count {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Tables */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.report-table thead {
+  background: #f8fafc;
+}
+
+.report-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.report-table th.total-col {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.report-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.report-table .member-name {
+  font-weight: 500;
+  color: #1a202c;
+}
+
+.report-table .amount-cell {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
+.report-table .amount-cell.expense {
+  color: #dc2626;
+}
+
+.report-table .total-cell {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  background: #eff6ff;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.report-table .total-row {
+  background: #f8fafc;
+}
+
+.report-table .total-row td {
+  border-top: 2px solid #cbd5e0;
+  border-bottom: 2px solid #cbd5e0;
+  padding: 14px 12px;
+}
+
+.empty-reports {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 15px;
+  }
+
+  .yearly-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-table {
+    font-size: 12px;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 8px 6px;
+  }
+
+  .contributor-item .rank {
+    font-size: 18px;
+    min-width: 40px;
+  }
+
+  .contributor-stats .amount {
+    font-size: 16px;
+  }
+
+  .yearly-stats .value {
+    font-size: 18px;
+  }
+}

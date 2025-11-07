@@ -1,0 +1,104 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: quychung-postgres
+    environment:
+      POSTGRES_DB: quychung
+      POSTGRES_USER: quychung
+      POSTGRES_PASSWORD: quychung123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - quychung-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quychung"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Hardhat Local Node
+  hardhat:
+    image: node:18-alpine
+    container_name: quychung-hardhat
+    working_dir: /app
+    command: sh -c "npm install && npx hardhat node --hostname 0.0.0.0"
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./hardhat.config.js:/app/hardhat.config.js
+      - ./contracts:/app/contracts
+      - ./scripts:/app/scripts
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - hardhat_artifacts:/app/artifacts
+      - hardhat_cache:/app/cache
+    networks:
+      - quychung-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8545 --post-data='{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}' --header='Content-Type: application/json' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
+  # Backend (Golang)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: quychung-backend
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=quychung
+      - DB_PASSWORD=quychung123
+      - DB_NAME=quychung
+      - BLOCKCHAIN_RPC=http://hardhat:8545
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URL=http://localhost:3000/auth/callback
+      - PORT=8080
+      - TREASURY_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./contracts:/root/contracts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      hardhat:
+        condition: service_healthy
+    networks:
+      - quychung-network
+    restart: unless-stopped
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: quychung-frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+      - REACT_APP_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - quychung-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  hardhat_artifacts:
+  hardhat_cache:
+
+networks:
+  quychung-network:
+    driver: bridge

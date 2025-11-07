@@ -1,0 +1,10 @@
+node_modules
+.env
+.env.local
+build
+.git
+.gitignore
+README.md
+.vscode
+.idea
+npm-debug.log

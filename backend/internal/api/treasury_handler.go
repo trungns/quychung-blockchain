@@ -1,0 +1,240 @@
+package api
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/quychung/backend/internal/database"
+	"github.com/quychung/backend/internal/middleware"
+	"github.com/quychung/backend/internal/models"
+	"github.com/quychung/backend/internal/services"
+)
+
+// TreasuryHandler handles treasury-related endpoints
+type TreasuryHandler struct {
+	blockchainService *services.BlockchainService
+}
+
+// NewTreasuryHandler creates a new treasury handler
+func NewTreasuryHandler(blockchainService *services.BlockchainService) *TreasuryHandler {
+	return &TreasuryHandler{
+		blockchainService: blockchainService,
+	}
+}
+
+// CreateTreasury creates a new treasury
+func (h *TreasuryHandler) CreateTreasury(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var req models.CreateTreasuryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Generate treasury address
+	chainAddress, err := h.blockchainService.GenerateTreasuryAddress()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate treasury address"})
+		return
+	}
+
+	// Create treasury
+	treasury := models.Treasury{
+		ID:           uuid.New(),
+		Name:         req.Name,
+		Description:  req.Description,
+		CreatedBy:    userID,
+		ChainAddress: chainAddress,
+	}
+
+	tx := database.DB.Begin()
+
+	if err := tx.Create(&treasury).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create treasury"})
+		return
+	}
+
+	// Add creator as admin member
+	member := models.Member{
+		ID:         uuid.New(),
+		TreasuryID: treasury.ID,
+		UserID:     userID,
+		Role:       "admin",
+	}
+
+	if err := tx.Create(&member).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add member"})
+		return
+	}
+
+	tx.Commit()
+
+	// Load relations
+	database.DB.Preload("Creator").Preload("Members.User").First(&treasury, treasury.ID)
+
+	c.JSON(http.StatusCreated, treasury)
+}
+
+// GetTreasuries gets all treasuries for the current user
+func (h *TreasuryHandler) GetTreasuries(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var members []models.Member
+	if err := database.DB.Where("user_id = ?", userID).Find(&members).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get treasuries"})
+		return
+	}
+
+	treasuryIDs := make([]uuid.UUID, len(members))
+	for i, member := range members {
+		treasuryIDs[i] = member.TreasuryID
+	}
+
+	var treasuries []models.Treasury
+	if err := database.DB.Preload("Creator").Preload("Members.User").
+		Where("id IN ?", treasuryIDs).Find(&treasuries).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load treasuries"})
+		return
+	}
+
+	c.JSON(http.StatusOK, treasuries)
+}
+
+// GetTreasury gets a single treasury by ID
+func (h *TreasuryHandler) GetTreasury(c *gin.Context) {
+	treasuryID := c.Param("id")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if user is a member
+	var member models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ?", treasuryID, userID).First(&member).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Not a member of this treasury"})
+		return
+	}
+
+	var treasury models.Treasury
+	if err := database.DB.Preload("Creator").Preload("Members.User").
+		First(&treasury, "id = ?", treasuryID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Treasury not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, treasury)
+}
+
+// AddMember adds a member to a treasury
+func (h *TreasuryHandler) AddMember(c *gin.Context) {
+	treasuryID := c.Param("id")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if user is admin
+	var adminMember models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ? AND role = ?", treasuryID, userID, "admin").
+		First(&adminMember).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can add members"})
+		return
+	}
+
+	var req models.AddMemberRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Find user by email
+	var newUser models.User
+	if err := database.DB.Where("email = ?", req.Email).First(&newUser).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Check if already a member
+	var existingMember models.Member
+	if database.DB.Where("treasury_id = ? AND user_id = ?", treasuryID, newUser.ID).
+		First(&existingMember).Error == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "User is already a member"})
+		return
+	}
+
+	// Add member
+	role := req.Role
+	if role == "" {
+		role = "member"
+	}
+
+	member := models.Member{
+		ID:         uuid.New(),
+		TreasuryID: uuid.MustParse(treasuryID),
+		UserID:     newUser.ID,
+		Role:       role,
+	}
+
+	if err := database.DB.Create(&member).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add member"})
+		return
+	}
+
+	// Load user info
+	database.DB.Preload("User").First(&member, member.ID)
+
+	c.JSON(http.StatusCreated, member)
+}
+
+// GetBalance gets the balance of a treasury
+func (h *TreasuryHandler) GetBalance(c *gin.Context) {
+	treasuryID := c.Param("id")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if user is a member
+	var member models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ?", treasuryID, userID).First(&member).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Not a member of this treasury"})
+		return
+	}
+
+	// Calculate balance
+	var totalIncome, totalExpense float64
+
+	database.DB.Model(&models.Transaction{}).
+		Where("treasury_id = ? AND type = ?", treasuryID, models.TransactionTypeIncome).
+		Select("COALESCE(SUM(amount_token), 0)").
+		Scan(&totalIncome)
+
+	database.DB.Model(&models.Transaction{}).
+		Where("treasury_id = ? AND type = ?", treasuryID, models.TransactionTypeExpense).
+		Select("COALESCE(SUM(amount_token), 0)").
+		Scan(&totalExpense)
+
+	balance := models.TreasuryBalance{
+		TreasuryID:   uuid.MustParse(treasuryID),
+		TotalIncome:  totalIncome,
+		TotalExpense: totalExpense,
+		Balance:      totalIncome - totalExpense,
+	}
+
+	c.JSON(http.StatusOK, balance)
+}

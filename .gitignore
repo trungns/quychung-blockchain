@@ -1,0 +1,52 @@
+# Environment variables
+.env
+.env.local
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+build/
+dist/
+*.exe
+
+# Database
+*.db
+*.sqlite
+postgres_data/
+geth_data/
+hardhat_artifacts/
+hardhat_cache/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Contract artifacts (deployed contract info - generated at runtime)
+contracts/TreasuryLogger.json
+
+# Hardhat artifacts
+artifacts/
+cache/
+typechain/
+typechain-types/
+
+# Go
+*.test
+*.out
+
+# Temporary files
+tmp/
+temp/

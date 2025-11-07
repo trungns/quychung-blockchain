@@ -1,0 +1,15 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy deployment script and contract
+COPY deploy-contract.js ./
+COPY ../contracts/TreasuryLogger.sol ./contracts/
+
+CMD ["node", "deploy-contract.js"]
