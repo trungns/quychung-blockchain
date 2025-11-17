@@ -1,8 +1,12 @@
 package main
 
 import (
+	"embed"
+	"io/fs"
 	"log"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -12,6 +16,9 @@ import (
 	"github.com/quychung/backend/internal/middleware"
 	"github.com/quychung/backend/internal/services"
 )
+
+//go:embed static/*
+var StaticFiles embed.FS
 
 func main() {
 	// Load environment variables
@@ -95,9 +102,61 @@ func main() {
 		protected.GET("/treasuries/:id/reports/top-contributors", reportHandler.GetTopContributors)
 	}
 
+	// Setup embedded static file serving for frontend
+	staticFS, err := fs.Sub(StaticFiles, "static")
+	if err == nil {
+		// Serve static files (JS, CSS, images, etc.)
+		router.NoRoute(func(c *gin.Context) {
+			path := c.Request.URL.Path
+
+			// Skip API routes
+			if strings.HasPrefix(path, "/api") {
+				c.JSON(404, gin.H{"error": "API endpoint not found"})
+				return
+			}
+
+			// Try to serve the file from embedded FS
+			file, err := staticFS.Open(strings.TrimPrefix(path, "/"))
+			if err != nil {
+				// If file not found, serve index.html (for React Router)
+				indexFile, err := staticFS.Open("index.html")
+				if err != nil {
+					c.JSON(404, gin.H{"error": "Not found"})
+					return
+				}
+				defer indexFile.Close()
+				c.DataFromReader(200, -1, "text/html", indexFile, nil)
+				return
+			}
+			defer file.Close()
+
+			// Determine content type
+			stat, _ := file.Stat()
+			if stat.IsDir() {
+				// Serve index.html for directories
+				indexFile, err := staticFS.Open("index.html")
+				if err != nil {
+					c.JSON(404, gin.H{"error": "Not found"})
+					return
+				}
+				defer indexFile.Close()
+				c.DataFromReader(200, -1, "text/html", indexFile, nil)
+				return
+			}
+
+			// Serve the file with appropriate content type
+			c.DataFromReader(200, stat.Size(), getContentType(path), file, nil)
+		})
+	} else {
+		log.Printf("Warning: Failed to load embedded static files: %v", err)
+		log.Println("Running in API-only mode")
+	}
+
 	// Start server
 	port := getEnv("PORT", "8080")
 	log.Printf("Server starting on port %s", port)
+	log.Printf("API available at: http://localhost:%s/api", port)
+	log.Printf("Frontend available at: http://localhost:%s", port)
 
 	if err := router.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
@@ -110,4 +169,25 @@ func getEnv(key, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+func getContentType(path string) string {
+	if strings.HasSuffix(path, ".html") {
+		return "text/html"
+	} else if strings.HasSuffix(path, ".css") {
+		return "text/css"
+	} else if strings.HasSuffix(path, ".js") {
+		return "application/javascript"
+	} else if strings.HasSuffix(path, ".json") {
+		return "application/json"
+	} else if strings.HasSuffix(path, ".png") {
+		return "image/png"
+	} else if strings.HasSuffix(path, ".jpg") || strings.HasSuffix(path, ".jpeg") {
+		return "image/jpeg"
+	} else if strings.HasSuffix(path, ".svg") {
+		return "image/svg+xml"
+	} else if strings.HasSuffix(path, ".ico") {
+		return "image/x-icon"
+	}
+	return "application/octet-stream"
 }
