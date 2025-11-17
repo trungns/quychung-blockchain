@@ -51,3 +51,4 @@ typechain-types/
 tmp/
 temp/
 k8s/secret.yaml
+SECRETS_FOR_DEVTRON.txt
