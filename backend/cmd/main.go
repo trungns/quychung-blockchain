@@ -4,7 +4,6 @@ import (
 	"embed"
 	"io/fs"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 
