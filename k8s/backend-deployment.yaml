@@ -1,0 +1,149 @@
+# ================================================================
+# BACKEND DEPLOYMENT - QUYCHUNG PROJECT
+# ================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: quychung
+  labels:
+    app: backend
+    component: api
+spec:
+  replicas: 2  # 2 pods for high availability
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: your-registry/quychung-backend:latest
+        # ⚠️ Thay "your-registry" bằng Docker Hub username hoặc GCR path
+        
+        ports:
+        - containerPort: 8080
+          name: http
+        
+        # ============ ENVIRONMENT VARIABLES ============
+        env:
+        # Non-sensitive configs (có thể hard-code hoặc dùng ConfigMap)
+        - name: DB_HOST
+          value: postgres-service  # Tên service của PostgreSQL
+        
+        - name: DB_PORT
+          value: "5432"
+        
+        - name: DB_USER
+          value: quychung
+        
+        - name: DB_NAME
+          value: quychung
+        
+        - name: PORT
+          value: "8080"
+        
+        - name: BLOCKCHAIN_RPC
+          value: https://rpc-amoy.polygon.technology
+        
+        - name: GOOGLE_REDIRECT_URL
+          value: https://your-domain.com/auth/callback
+          # ⚠️ Đổi thành domain thật của bạn
+        
+        # Sensitive secrets (từ Secret)
+        - name: TREASURY_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: blockchain-secrets
+              key: treasury-private-key
+              # ✅ Kubernetes tự động decode base64
+              # Backend nhận: "0xf608d9fad2f4f7fb588aac7ea8b3c32d976d2769044d90db2762a71ca6f10086"
+        
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: blockchain-secrets
+              key: db-password
+              # ✅ Backend nhận: "quychung123"
+        
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: blockchain-secrets
+              key: jwt-secret
+        
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: blockchain-secrets
+              key: google-client-id
+        
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: blockchain-secrets
+              key: google-client-secret
+        
+        # ============ VOLUME MOUNTS ============
+        volumeMounts:
+        - name: contracts
+          mountPath: /root/contracts
+          readOnly: true
+        
+        # ============ HEALTH CHECKS ============
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        # ============ RESOURCES ============
+        resources:
+          requests:
+            cpu: 100m      # 0.1 CPU
+            memory: 128Mi
+          limits:
+            cpu: 500m      # 0.5 CPU
+            memory: 512Mi
+      
+      # ============ VOLUMES ============
+      volumes:
+      - name: contracts
+        configMap:
+          name: contract-config
+          # Tạo ConfigMap riêng cho TreasuryLogger.json
+
+---
+# ================================================================
+# BACKEND SERVICE (ClusterIP for internal access)
+# ================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: quychung
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http

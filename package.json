@@ -8,11 +8,19 @@
     "deploy": "hardhat run scripts/deploy-hardhat.js --network localhost",
     "compile": "hardhat compile"
   },
-  "keywords": ["hardhat", "ethereum", "blockchain", "treasury"],
+  "keywords": [
+    "hardhat",
+    "ethereum",
+    "blockchain",
+    "treasury"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "hardhat": "^2.27.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
   }
 }

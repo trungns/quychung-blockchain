@@ -50,3 +50,4 @@ typechain-types/
 # Temporary files
 tmp/
 temp/
+k8s/secret.yaml

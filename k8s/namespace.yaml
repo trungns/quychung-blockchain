@@ -1,0 +1,10 @@
+# ================================================================
+# NAMESPACE - Tạo namespace riêng cho dự án
+# ================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: quychung
+  labels:
+    name: quychung
+    environment: production

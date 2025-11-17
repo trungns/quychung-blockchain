@@ -1,0 +1,234 @@
+# ================================================================
+# CONFIGMAP - Non-sensitive configuration
+# ================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: quychung
+data:
+  # Database configuration (non-sensitive)
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_USER: "quychung"
+  DB_NAME: "quychung"
+  
+  # Backend configuration
+  PORT: "8080"
+  
+  # Blockchain configuration
+  BLOCKCHAIN_RPC: "https://rpc-amoy.polygon.technology"
+  
+  # Google OAuth redirect (update với domain thật)
+  GOOGLE_REDIRECT_URL: "https://your-domain.com/auth/callback"
+
+---
+# ================================================================
+# CONFIGMAP - Contract ABI và Address
+# ================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: contract-config
+  namespace: quychung
+data:
+  TreasuryLogger.json: |
+    {
+      "address": "0xF95395e8eFc43AA57Ef518d423AeC58f8722944e",
+      "network": {
+        "name": "polygonAmoy",
+        "chainId": 80002
+      },
+      "abi": [
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "treasury",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amountToken",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "isIncome",
+              "type": "bool"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "detailHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "loggedBy",
+              "type": "address"
+            }
+          ],
+          "name": "TransactionLogged",
+          "type": "event"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_treasury",
+              "type": "address"
+            }
+          ],
+          "name": "getTreasuryLogCount",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_treasury",
+              "type": "address"
+            }
+          ],
+          "name": "getTreasuryLogIndices",
+          "outputs": [
+            {
+              "internalType": "uint256[]",
+              "name": "",
+              "type": "uint256[]"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "logCount",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_treasury",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_amountToken",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "_isIncome",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "_detailHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "logTransaction",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "name": "logs",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "treasury",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amountToken",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isIncome",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "detailHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "loggedBy",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "name": "treasuryLogs",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        }
+      ]
+    }
