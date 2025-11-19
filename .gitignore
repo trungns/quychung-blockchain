@@ -34,8 +34,8 @@ logs/
 .DS_Store
 Thumbs.db
 
-# Contract artifacts (deployed contract info - generated at runtime)
-contracts/TreasuryLogger.json
+# Contract artifacts - NOTE: TreasuryLogger.json is NOT ignored
+# because it contains the deployed contract ABI needed for production
 
 # Hardhat artifacts
 artifacts/
