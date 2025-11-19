@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+// Use relative path - works for both localhost and production
+// In production: https://quychung.wellytech.vn/api
+// In development: http://localhost:3000/api (proxied to backend)
+const API_URL = process.env.REACT_APP_API_URL || '';
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,

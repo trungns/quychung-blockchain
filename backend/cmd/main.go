@@ -53,13 +53,19 @@ func main() {
 	// Initialize Gin
 	router := gin.Default()
 
-	// CORS middleware
+	// CORS middleware - Allow all origins since frontend is embedded
+	// Frontend calls /api from same origin, but we allow CORS for development
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001", "https://quychung.wellytech.vn"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			// In production with embedded frontend, requests come from same origin
+			// Allow all for flexibility
+			return true
+		},
 	}))
 
 	// Initialize handlers
