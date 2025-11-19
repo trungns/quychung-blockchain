@@ -97,12 +97,20 @@ func (h *TreasuryHandler) GetTreasuries(c *gin.Context) {
 		return
 	}
 
+	// Initialize as empty slice to return [] instead of null
+	treasuries := make([]models.Treasury, 0)
+
+	// If user has no memberships, return empty array
+	if len(members) == 0 {
+		c.JSON(http.StatusOK, treasuries)
+		return
+	}
+
 	treasuryIDs := make([]uuid.UUID, len(members))
 	for i, member := range members {
 		treasuryIDs[i] = member.TreasuryID
 	}
 
-	var treasuries []models.Treasury
 	if err := database.DB.Preload("Creator").Preload("Members.User").
 		Where("id IN ?", treasuryIDs).Find(&treasuries).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load treasuries"})

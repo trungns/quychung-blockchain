@@ -51,6 +51,7 @@ const Reports = () => {
 
   // Group income by member
   const groupIncomeByMember = () => {
+    if (!Array.isArray(incomeByMember)) return [];
     const grouped = {};
     incomeByMember.forEach(item => {
       if (!grouped[item.user_id]) {
@@ -69,6 +70,7 @@ const Reports = () => {
 
   // Get unique months from income data
   const getMonths = () => {
+    if (!Array.isArray(incomeByMember)) return [];
     const months = new Set();
     incomeByMember.forEach(item => months.add(item.month));
     return Array.from(months).sort().reverse();
@@ -80,7 +82,7 @@ const Reports = () => {
 
   const memberGroups = groupIncomeByMember();
   const months = getMonths();
-  const availableYears = yearlySummary.map(y => y.year);
+  const availableYears = Array.isArray(yearlySummary) ? yearlySummary.map(y => y.year) : [];
 
   return (
     <div className="reports-container">
@@ -188,9 +190,11 @@ const Reports = () => {
                   <tr className="total-row">
                     <td><strong>Tổng cộng</strong></td>
                     {months.map(month => {
-                      const monthTotal = incomeByMember
-                        .filter(i => i.month === month)
-                        .reduce((sum, i) => sum + i.total, 0);
+                      const monthTotal = Array.isArray(incomeByMember)
+                        ? incomeByMember
+                            .filter(i => i.month === month)
+                            .reduce((sum, i) => sum + i.total, 0)
+                        : 0;
                       return (
                         <td key={month} className="amount-cell">
                           <strong>{formatCurrency(monthTotal)}</strong>
@@ -231,9 +235,9 @@ const Reports = () => {
                   <tr className="total-row">
                     <td><strong>Tổng cộng</strong></td>
                     <td className="amount-cell expense">
-                      <strong>{formatCurrency(monthlyExpense.reduce((sum, e) => sum + e.total, 0))}</strong>
+                      <strong>{formatCurrency(Array.isArray(monthlyExpense) ? monthlyExpense.reduce((sum, e) => sum + e.total, 0) : 0)}</strong>
                     </td>
-                    <td><strong>{monthlyExpense.reduce((sum, e) => sum + e.count, 0)}</strong></td>
+                    <td><strong>{Array.isArray(monthlyExpense) ? monthlyExpense.reduce((sum, e) => sum + e.count, 0) : 0}</strong></td>
                   </tr>
                 </tbody>
               </table>

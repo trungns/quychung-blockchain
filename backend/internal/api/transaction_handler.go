@@ -156,7 +156,8 @@ func (h *TransactionHandler) GetTransactions(c *gin.Context) {
 		return
 	}
 
-	var transactions []models.Transaction
+	// Initialize as empty slice to return [] instead of null
+	transactions := make([]models.Transaction, 0)
 	if err := database.DB.Preload("Creator").Preload("ChainLog").
 		Where("treasury_id = ?", treasuryID).
 		Order("created_at DESC").
