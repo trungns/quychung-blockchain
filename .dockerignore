@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.vscode
+.idea
+.claude
+.qodo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Dependencies
+node_modules
+backend/vendor
+
+# Build artifacts  
+artifacts
+cache
+blockchain
+
+# Other
+.DS_Store

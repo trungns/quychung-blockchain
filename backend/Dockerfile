@@ -5,11 +5,11 @@ FROM node:18-alpine AS frontend-builder
 
 WORKDIR /frontend
 
-# Copy frontend source
-COPY ../frontend/package*.json ./
+# Copy frontend source from project root
+COPY frontend/package*.json ./
 RUN npm ci --only=production
 
-COPY ../frontend/ ./
+COPY frontend/ ./
 
 # Build React app for production
 RUN npm run build
@@ -24,17 +24,17 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache git
 
-# Copy go mod files
-COPY go.mod ./
+# Copy go mod files from backend directory
+COPY backend/go.mod ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy source code
-COPY . .
+# Copy backend source code
+COPY backend/ ./
 
-# Copy contracts directory from project root (one level up)
-COPY ../contracts ./contracts
+# Copy contracts directory from project root
+COPY contracts/ ./contracts/
 
 # Copy built frontend into backend/cmd/static directory
 COPY --from=frontend-builder /frontend/build ./cmd/static
