@@ -33,6 +33,9 @@ RUN go mod download
 # Copy source code
 COPY . .
 
+# Copy contracts directory from project root (one level up)
+COPY ../contracts ./contracts
+
 # Copy built frontend into backend/cmd/static directory
 COPY --from=frontend-builder /frontend/build ./cmd/static
 
