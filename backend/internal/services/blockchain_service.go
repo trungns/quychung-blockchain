@@ -224,7 +224,9 @@ func (s *BlockchainService) createDetailHash(transaction *models.Transaction) [3
 	)
 
 	hash := crypto.Keccak256Hash([]byte(data))
-	return [32]byte(hash)
+	var result [32]byte
+	copy(result[:], hash[:])
+	return result
 }
 
 // GetTransactionReceipt gets the receipt of a transaction
