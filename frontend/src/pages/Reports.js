@@ -36,10 +36,11 @@ const Reports = () => {
       ]);
 
       setTreasury(treasuryRes.data);
-      setIncomeByMember(incomeRes.data);
-      setMonthlyExpense(expenseRes.data);
-      setYearlySummary(summaryRes.data);
-      setTopContributors(contributorsRes.data);
+      // Defensive: ensure arrays are never null
+      setIncomeByMember(incomeRes.data || []);
+      setMonthlyExpense(expenseRes.data || []);
+      setYearlySummary(summaryRes.data || []);
+      setTopContributors(contributorsRes.data || []);
     } catch (error) {
       console.error('Failed to load reports:', error);
       alert('Không thể tải báo cáo');

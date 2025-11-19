@@ -47,7 +47,8 @@ func (h *ReportHandler) GetMonthlyIncomeByMember(c *gin.Context) {
 		}
 	}
 
-	var results []MonthlyIncomeByMember
+	// Initialize as empty slice (not nil) so JSON returns [] instead of null
+	results := make([]MonthlyIncomeByMember, 0)
 
 	query := `
 		SELECT
@@ -86,7 +87,8 @@ func (h *ReportHandler) GetMonthlyExpense(c *gin.Context) {
 		}
 	}
 
-	var results []MonthlyExpenseReport
+	// Initialize as empty slice (not nil) so JSON returns [] instead of null
+	results := make([]MonthlyExpenseReport, 0)
 
 	query := `
 		SELECT
@@ -122,7 +124,8 @@ func (h *ReportHandler) GetYearlySummary(c *gin.Context) {
 		ExpenseCount int     `json:"expense_count"`
 	}
 
-	var results []YearlySummary
+	// Initialize as empty slice (not nil) so JSON returns [] instead of null
+	results := make([]YearlySummary, 0)
 
 	query := `
 		SELECT
@@ -165,7 +168,8 @@ func (h *ReportHandler) GetTopContributors(c *gin.Context) {
 		Count       int       `json:"count"`
 	}
 
-	var results []Contributor
+	// Initialize as empty slice (not nil) so JSON returns [] instead of null
+	results := make([]Contributor, 0)
 
 	query := `
 		SELECT
