@@ -96,12 +96,28 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 
 	// Send transaction to blockchain (async)
 	go func() {
+		log.Printf("DEBUG: Starting blockchain logging for transaction %s", transaction.ID)
+
+		// Check if blockchain service is available
+		if h.blockchainService == nil {
+			log.Printf("ERROR: Blockchain service is NIL for transaction %s", transaction.ID)
+			database.DB.Model(&chainLog).Updates(map[string]interface{}{
+				"status": "failed",
+			})
+			return
+		}
+
+		log.Printf("DEBUG: Blockchain service is available")
+
 		ctx := context.Background()
 		treasuryAddr := common.HexToAddress(treasury.ChainAddress)
 
+		log.Printf("DEBUG: Calling blockchain service - Treasury: %s, Amount: %.2f, Type: %s",
+			treasuryAddr.Hex(), transaction.AmountToken, transaction.Type)
+
 		txHash, detailHash, err := h.blockchainService.LogTransaction(ctx, treasuryAddr, &transaction)
 		if err != nil {
-			log.Printf("Failed to log transaction to blockchain: %v", err)
+			log.Printf("ERROR: Failed to log transaction %s to blockchain: %v", transaction.ID, err)
 			database.DB.Model(&chainLog).Updates(map[string]interface{}{
 				"status": "failed",
 			})
@@ -115,7 +131,7 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 			"status":      "confirmed",
 		})
 
-		log.Printf("Transaction logged to blockchain: %s", txHash)
+		log.Printf("SUCCESS: Transaction %s logged to blockchain with tx_hash: %s", transaction.ID, txHash)
 	}()
 
 	// Load relations

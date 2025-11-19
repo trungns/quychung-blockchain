@@ -83,11 +83,35 @@ func NewBlockchainService() (*BlockchainService, error) {
 
 // loadContract loads the deployed contract information
 func loadContract() (common.Address, abi.ABI, error) {
+	// Check if file exists
+	log.Println("DEBUG: Attempting to load contracts/TreasuryLogger.json")
+
+	// List files in current directory
+	if entries, err := os.ReadDir("."); err == nil {
+		log.Println("DEBUG: Files in current directory:")
+		for _, entry := range entries {
+			log.Printf("  - %s (dir: %v)", entry.Name(), entry.IsDir())
+		}
+	}
+
+	// Check contracts directory
+	if entries, err := os.ReadDir("contracts"); err == nil {
+		log.Println("DEBUG: Files in contracts/ directory:")
+		for _, entry := range entries {
+			info, _ := entry.Info()
+			log.Printf("  - %s (size: %d bytes)", entry.Name(), info.Size())
+		}
+	} else {
+		log.Printf("ERROR: Cannot read contracts/ directory: %v", err)
+	}
+
 	// Try to load from contracts/TreasuryLogger.json
 	data, err := os.ReadFile("contracts/TreasuryLogger.json")
 	if err != nil {
 		return common.Address{}, abi.ABI{}, fmt.Errorf("failed to read contract file: %w", err)
 	}
+
+	log.Printf("DEBUG: Successfully read contract file, size: %d bytes", len(data))
 
 	var deployment ContractDeployment
 	if err := json.Unmarshal(data, &deployment); err != nil {
@@ -95,6 +119,7 @@ func loadContract() (common.Address, abi.ABI, error) {
 	}
 
 	contractAddr := common.HexToAddress(deployment.Address)
+	log.Printf("DEBUG: Contract address: %s", contractAddr.Hex())
 
 	// Parse ABI
 	contractABI, err := abi.JSON(strings.NewReader(string(deployment.ABI)))
@@ -102,6 +127,7 @@ func loadContract() (common.Address, abi.ABI, error) {
 		return common.Address{}, abi.ABI{}, fmt.Errorf("failed to parse contract ABI: %w", err)
 	}
 
+	log.Println("DEBUG: Contract ABI parsed successfully")
 	return contractAddr, contractABI, nil
 }
 
