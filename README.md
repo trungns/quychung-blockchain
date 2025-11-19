@@ -128,31 +128,41 @@ Mở trình duyệt: **http://localhost:3000**
   - Người tạo
   - TX hash trên blockchain
 
-## API Documentation
+## 📚 Documentation
 
-### Authentication
+**Toàn bộ tài liệu chi tiết**: [docs/README.md](docs/README.md)
 
-**POST** `/api/auth/google-login`
-```json
-{
-  "code": "google-auth-code"
-}
-```
+### Quick Links
 
-### Treasuries
+- 🚀 **[Getting Started](docs/guides/GETTING_STARTED.md)** - Setup từ đầu
+- 📖 **[Comprehensive Documentation](docs/references/COMPREHENSIVE_DOCUMENTATION.md)** - Tài liệu chính (2000+ dòng)
+- 🔌 **[API Reference](docs/references/API_REFERENCE.md)** - Chi tiết tất cả APIs
+- 🚢 **[Deployment Checklist](docs/operations/DEPLOYMENT_CHECKLIST.md)** - Deploy production
+- 🐛 **[Troubleshooting](docs/troubleshooting/)** - Debug issues
 
-**POST** `/api/treasuries` - Tạo quỹ mới
-**GET** `/api/treasuries` - Lấy danh sách quỹ
-**GET** `/api/treasuries/:id` - Chi tiết quỹ
-**GET** `/api/treasuries/:id/balance` - Số dư quỹ
-**POST** `/api/treasuries/:id/members` - Thêm thành viên
+### API Overview
 
-### Transactions
+**Authentication**
+- `POST /api/auth/google-login` - Login with Google
 
-**POST** `/api/treasuries/:id/transactions` - Tạo giao dịch
-**GET** `/api/treasuries/:id/transactions` - Lịch sử giao dịch
+**Treasuries**
+- `POST /api/treasuries` - Tạo quỹ mới
+- `GET /api/treasuries` - Lấy danh sách quỹ
+- `GET /api/treasuries/:id` - Chi tiết quỹ
+- `GET /api/treasuries/:id/balance` - Số dư quỹ
+- `POST /api/treasuries/:id/members` - Thêm thành viên
 
-Xem chi tiết API tại source code: [backend/cmd/main.go](backend/cmd/main.go)
+**Transactions**
+- `POST /api/treasuries/:id/transactions` - Tạo giao dịch
+- `GET /api/treasuries/:id/transactions` - Lịch sử giao dịch
+
+**Reports**
+- `GET /api/treasuries/:id/reports/income-by-member` - Thu theo member
+- `GET /api/treasuries/:id/reports/monthly-expense` - Chi theo tháng
+- `GET /api/treasuries/:id/reports/yearly-summary` - Tổng kết năm
+- `GET /api/treasuries/:id/reports/top-contributors` - Top đóng góp
+
+📖 **Xem chi tiết**: [API Reference](docs/references/API_REFERENCE.md)
 
 ## Development
 
@@ -183,28 +193,27 @@ Migrations tự động chạy khi backend khởi động. Schema xem tại: [sc
 
 ## Troubleshooting
 
-### Lỗi kết nối database
+### Quick Fixes
 
+**Lỗi kết nối database**
 ```bash
 docker-compose restart postgres backend
 ```
 
-### Lỗi blockchain
-
+**Lỗi blockchain**
 ```bash
 docker-compose restart hardhat
-# Chờ 30s rồi restart backend
 docker-compose restart backend
-# Deploy lại contract nếu cần
 make deploy-contract
 ```
 
-### Reset toàn bộ
-
+**Reset toàn bộ**
 ```bash
 docker-compose down -v
 docker-compose up -d
 ```
+
+📖 **Chi tiết troubleshooting**: [Troubleshooting Guides](docs/troubleshooting/)
 
 ## Cấu trúc Database
 
