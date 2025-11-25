@@ -246,3 +246,116 @@ func (h *TreasuryHandler) GetBalance(c *gin.Context) {
 
 	c.JSON(http.StatusOK, balance)
 }
+
+// GetBankAccount gets bank account info for a treasury
+func (h *TreasuryHandler) GetBankAccount(c *gin.Context) {
+	treasuryID := c.Param("id")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if user is a member
+	var member models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ?", treasuryID, userID).First(&member).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Not a member of this treasury"})
+		return
+	}
+
+	var bankAccount models.TreasuryBankAccount
+	if err := database.DB.Where("treasury_id = ?", treasuryID).First(&bankAccount).Error; err != nil {
+		// Return 404 if bank account not configured yet
+		c.JSON(http.StatusNotFound, gin.H{"error": "Bank account not configured"})
+		return
+	}
+
+	c.JSON(http.StatusOK, bankAccount)
+}
+
+// UpdateBankAccount updates or creates bank account info for a treasury
+func (h *TreasuryHandler) UpdateBankAccount(c *gin.Context) {
+	treasuryID := c.Param("id")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if user is admin
+	var adminMember models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ? AND role = ?", treasuryID, userID, "admin").
+		First(&adminMember).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can update bank account"})
+		return
+	}
+
+	var req models.UpdateBankAccountRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if bank account exists
+	var bankAccount models.TreasuryBankAccount
+	err = database.DB.Where("treasury_id = ?", treasuryID).First(&bankAccount).Error
+
+	if err != nil {
+		// Create new bank account
+		bankAccount = models.TreasuryBankAccount{
+			ID:            uuid.New(),
+			TreasuryID:    uuid.MustParse(treasuryID),
+			BankName:      req.BankName,
+			AccountNumber: req.AccountNumber,
+			AccountName:   req.AccountName,
+			QRCodeURL:     req.QRCodeURL,
+		}
+
+		if err := database.DB.Create(&bankAccount).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create bank account"})
+			return
+		}
+
+		c.JSON(http.StatusCreated, bankAccount)
+		return
+	}
+
+	// Update existing bank account
+	bankAccount.BankName = req.BankName
+	bankAccount.AccountNumber = req.AccountNumber
+	bankAccount.AccountName = req.AccountName
+	bankAccount.QRCodeURL = req.QRCodeURL
+
+	if err := database.DB.Save(&bankAccount).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update bank account"})
+		return
+	}
+
+	c.JSON(http.StatusOK, bankAccount)
+}
+
+// DeleteBankAccount deletes bank account info for a treasury
+func (h *TreasuryHandler) DeleteBankAccount(c *gin.Context) {
+	treasuryID := c.Param("id")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if user is admin
+	var adminMember models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ? AND role = ?", treasuryID, userID, "admin").
+		First(&adminMember).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can delete bank account"})
+		return
+	}
+
+	// Delete bank account
+	if err := database.DB.Where("treasury_id = ?", treasuryID).Delete(&models.TreasuryBankAccount{}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete bank account"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Bank account deleted successfully"})
+}

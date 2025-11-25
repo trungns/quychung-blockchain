@@ -129,6 +129,14 @@ const TreasuryDetail = () => {
           >
             📊 Báo cáo
           </button>
+          {treasury.created_by === treasury.creator?.id && (
+            <button
+              onClick={() => navigate(`/treasury/${id}/settings`)}
+              className="btn-secondary btn-settings"
+            >
+              ⚙️ Cài đặt
+            </button>
+          )}
         </div>
 
         {/* Transactions Section - Moved up for mobile priority */}
@@ -152,6 +160,7 @@ const TreasuryDetail = () => {
             <h2>{transactionType === 'INCOME' ? 'Nhập thu' : 'Nhập chi'}</h2>
             <TransactionForm
               type={transactionType}
+              treasuryId={id}
               onSubmit={handleTransactionSubmit}
               onCancel={() => setShowTransactionForm(false)}
             />

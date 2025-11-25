@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import TreasuryList from './pages/TreasuryList';
 import TreasuryDetail from './pages/TreasuryDetail';
+import TreasurySettings from './pages/TreasurySettings';
 import Reports from './pages/Reports';
 import './App.css';
 
@@ -45,6 +46,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Reports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/treasury/:id/settings"
+            element={
+              <ProtectedRoute>
+                <TreasurySettings />
               </ProtectedRoute>
             }
           />

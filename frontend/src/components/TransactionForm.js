@@ -1,14 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatCurrencyInput, parseCurrencyInput } from '../utils/formatters';
+import { treasuryAPI } from '../services/api';
+import BankAccountInfo from './BankAccountInfo';
 import '../styles/TransactionForm.css';
 
-const TransactionForm = ({ type, onSubmit, onCancel }) => {
+const TransactionForm = ({ type, treasuryId, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     amount_token: '',
     note: '',
   });
   const [formattedAmount, setFormattedAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [bankAccount, setBankAccount] = useState(null);
+  const [loadingBankAccount, setLoadingBankAccount] = useState(false);
+
+  // Fetch bank account info when type is INCOME
+  useEffect(() => {
+    if (type === 'INCOME' && treasuryId) {
+      loadBankAccount();
+    }
+  }, [type, treasuryId]);
+
+  const loadBankAccount = async () => {
+    setLoadingBankAccount(true);
+    try {
+      const response = await treasuryAPI.getBankAccount(treasuryId);
+      setBankAccount(response.data);
+    } catch (error) {
+      console.log('No bank account configured or error loading:', error);
+      setBankAccount(null);
+    } finally {
+      setLoadingBankAccount(false);
+    }
+  };
 
   const handleAmountChange = (e) => {
     const input = e.target.value;
@@ -44,6 +68,15 @@ const TransactionForm = ({ type, onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="transaction-form">
+      {/* Show bank account info for INCOME transactions */}
+      {type === 'INCOME' && !loadingBankAccount && (
+        <BankAccountInfo bankAccount={bankAccount} amount={formData.amount_token} />
+      )}
+
+      {type === 'INCOME' && loadingBankAccount && (
+        <div className="loading-bank-account">Đang tải thông tin ngân hàng...</div>
+      )}
+
       <div className="form-group">
         <label>Số tiền (VNĐ) *</label>
         <input

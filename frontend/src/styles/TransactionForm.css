@@ -39,3 +39,13 @@
 .transaction-form input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* Loading state for bank account */
+.loading-bank-account {
+  text-align: center;
+  padding: 15px;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}

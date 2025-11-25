@@ -1,0 +1,92 @@
+.treasury-settings-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.settings-page-header {
+  margin-bottom: 30px;
+}
+
+.settings-page-header .btn-back {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+
+.settings-page-header .btn-back:hover {
+  color: #45a049;
+}
+
+.settings-page-header h1 {
+  margin: 10px 0;
+  color: #333;
+  font-size: 28px;
+}
+
+.settings-page-header .treasury-name {
+  color: #666;
+  font-size: 16px;
+  margin: 5px 0 0 0;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.error-container {
+  max-width: 600px;
+  margin: 100px auto;
+  text-align: center;
+  padding: 40px;
+}
+
+.error-container h2 {
+  color: #f44336;
+  margin-bottom: 15px;
+}
+
+.error-container p {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 16px;
+}
+
+.error-container .btn-primary {
+  padding: 12px 30px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.error-container .btn-primary:hover {
+  background: #45a049;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .treasury-settings-container {
+    padding: 15px;
+  }
+
+  .settings-page-header h1 {
+    font-size: 24px;
+  }
+
+  .error-container {
+    margin: 50px auto;
+    padding: 30px 20px;
+  }
+}

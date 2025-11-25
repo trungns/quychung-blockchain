@@ -1,0 +1,133 @@
+.bank-account-info {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.bank-account-info h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.no-bank-info {
+  color: #666;
+  text-align: center;
+  padding: 10px;
+  margin: 0;
+}
+
+.bank-details {
+  background: white;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #666;
+  font-size: 14px;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.account-number {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.amount-row {
+  background: #e3f2fd;
+  margin: 0 -15px;
+  padding: 12px 15px;
+  border-radius: 4px;
+  border: none;
+}
+
+.amount-value {
+  color: #1976d2;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.qr-code-section {
+  text-align: center;
+  padding: 15px 0;
+}
+
+.qr-label {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.qr-code-image {
+  max-width: 250px;
+  width: 100%;
+  height: auto;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  padding: 10px;
+}
+
+.qr-error {
+  color: #f44336;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.bank-note {
+  background: #fff3e0;
+  border-left: 3px solid #ff9800;
+  padding: 10px 12px;
+  margin: 15px 0 0 0;
+  font-size: 13px;
+  color: #666;
+  border-radius: 4px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .bank-account-info {
+    padding: 15px;
+  }
+
+  .bank-details {
+    padding: 12px;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detail-value {
+    text-align: left;
+    font-size: 15px;
+  }
+
+  .qr-code-image {
+    max-width: 200px;
+  }
+}

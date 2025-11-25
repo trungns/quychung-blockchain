@@ -39,6 +39,9 @@ export const treasuryAPI = {
   getById: (id) => api.get(`/treasuries/${id}`),
   addMember: (id, data) => api.post(`/treasuries/${id}/members`, data),
   getBalance: (id) => api.get(`/treasuries/${id}/balance`),
+  getBankAccount: (id) => api.get(`/treasuries/${id}/bank-account`),
+  updateBankAccount: (id, data) => api.put(`/treasuries/${id}/bank-account`, data),
+  deleteBankAccount: (id) => api.delete(`/treasuries/${id}/bank-account`),
 };
 
 // Transaction API

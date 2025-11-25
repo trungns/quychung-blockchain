@@ -74,6 +74,22 @@ func main() {
 	transactionHandler := api.NewTransactionHandler(blockchainService)
 	reportHandler := api.NewReportHandler()
 
+	// Dynamic env-config.js endpoint (serves runtime environment config to frontend)
+	router.GET("/env-config.js", func(c *gin.Context) {
+		googleClientID := getEnv("GOOGLE_CLIENT_ID", "")
+		port := getEnv("PORT", "8080")
+		apiURL := "http://localhost:" + port
+
+		// Generate JavaScript config file
+		jsContent := "window.ENV = {\n"
+		jsContent += "  REACT_APP_API_URL: '" + apiURL + "',\n"
+		jsContent += "  REACT_APP_GOOGLE_CLIENT_ID: '" + googleClientID + "'\n"
+		jsContent += "};"
+
+		c.Header("Content-Type", "application/javascript")
+		c.String(200, jsContent)
+	})
+
 	// Public routes
 	public := router.Group("/api")
 	{
@@ -95,6 +111,9 @@ func main() {
 		protected.GET("/treasuries/:id", treasuryHandler.GetTreasury)
 		protected.POST("/treasuries/:id/members", treasuryHandler.AddMember)
 		protected.GET("/treasuries/:id/balance", treasuryHandler.GetBalance)
+		protected.GET("/treasuries/:id/bank-account", treasuryHandler.GetBankAccount)
+		protected.PUT("/treasuries/:id/bank-account", treasuryHandler.UpdateBankAccount)
+		protected.DELETE("/treasuries/:id/bank-account", treasuryHandler.DeleteBankAccount)
 
 		// Transaction routes
 		protected.POST("/treasuries/:id/transactions", transactionHandler.CreateTransaction)

@@ -121,3 +121,26 @@ type GoogleUserInfo struct {
 	Name    string `json:"name"`
 	Picture string `json:"picture"`
 }
+
+// TreasuryBankAccount represents bank account info for a treasury
+type TreasuryBankAccount struct {
+	ID            uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
+	TreasuryID    uuid.UUID `gorm:"type:uuid;not null;unique" json:"treasury_id"`
+	BankName      string    `gorm:"type:varchar(255);not null" json:"bank_name"`
+	AccountNumber string    `gorm:"type:varchar(50);not null" json:"account_number"`
+	AccountName   string    `gorm:"type:varchar(255);not null" json:"account_name"`
+	QRCodeURL     string    `gorm:"type:text" json:"qr_code_url,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+
+	// Relations
+	Treasury Treasury `gorm:"foreignKey:TreasuryID" json:"treasury,omitempty"`
+}
+
+// UpdateBankAccountRequest represents request to update bank account
+type UpdateBankAccountRequest struct {
+	BankName      string `json:"bank_name" binding:"required"`
+	AccountNumber string `json:"account_number" binding:"required"`
+	AccountName   string `json:"account_name" binding:"required"`
+	QRCodeURL     string `json:"qr_code_url"`
+}
