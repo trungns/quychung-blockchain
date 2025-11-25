@@ -164,9 +164,10 @@
     grid-template-columns: 1fr;
   }
 
-  .members-section,
+  /* Transactions section appears before members on mobile */
   .transactions-section {
     padding: 20px;
+    order: -1; /* Move transactions up */
   }
 
   .section-header {
@@ -177,12 +178,6 @@
 
   .section-header .btn-secondary {
     width: 100%;
-  }
-
-  .member-item {
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-start;
   }
 }
 

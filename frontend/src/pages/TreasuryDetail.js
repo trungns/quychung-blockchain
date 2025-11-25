@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { treasuryAPI, transactionAPI } from '../services/api';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
+import MembersSummary from '../components/MembersSummary';
 import { formatCurrency } from '../utils/formatters';
 import '../styles/TreasuryDetail.css';
 
@@ -130,29 +131,18 @@ const TreasuryDetail = () => {
           </button>
         </div>
 
-        {/* Members Section */}
-        <div className="members-section">
-          <div className="section-header">
-            <h3>Thành viên ({treasury.members?.length || 0})</h3>
-            <button onClick={() => setShowAddMember(true)} className="btn-secondary">
-              + Thêm thành viên
-            </button>
-          </div>
-          <div className="members-list">
-            {treasury.members?.map((member) => (
-              <div key={member.id} className="member-item">
-                <span>{member.user?.name || member.user?.email}</span>
-                <span className="member-role">{member.role}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Transactions Section */}
+        {/* Transactions Section - Moved up for mobile priority */}
         <div className="transactions-section">
           <h3>Lịch sử giao dịch</h3>
           <TransactionList transactions={transactions} />
         </div>
+
+        {/* Members Section - Using new MembersSummary component */}
+        <MembersSummary
+          members={treasury.members || []}
+          onAddMember={() => setShowAddMember(true)}
+          isAdmin={treasury.created_by === treasury.creator?.id}
+        />
       </div>
 
       {/* Transaction Form Modal */}
