@@ -6,6 +6,25 @@
   margin-bottom: 20px;
 }
 
+/* Currency input styling */
+.transaction-form .currency-input {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: right;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.transaction-form .formatted-hint {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-size: 13px;
+  text-align: right;
+  font-weight: normal;
+}
+
+/* Legacy support for old number inputs */
 .transaction-form input[type="number"] {
   font-size: 16px;
 }

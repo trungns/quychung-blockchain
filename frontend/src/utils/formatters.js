@@ -72,3 +72,34 @@ export const formatMonthYear = (date) => {
     month: '2-digit'
   });
 };
+
+/**
+ * Parse currency input string to number
+ * Removes all non-digit characters and converts to number
+ * @param {string} value - Formatted currency string (e.g., "1,000,000")
+ * @returns {number} Parsed number
+ */
+export const parseCurrencyInput = (value) => {
+  if (!value) return 0;
+  // Remove all non-digit characters (commas, spaces, etc.)
+  const cleaned = String(value).replace(/[^0-9]/g, '');
+  return parseFloat(cleaned) || 0;
+};
+
+/**
+ * Format number for currency input field with comma separators
+ * @param {string|number} value - Value to format
+ * @returns {string} Formatted string with comma separators
+ */
+export const formatCurrencyInput = (value) => {
+  if (!value && value !== 0) return '';
+
+  // Convert to string and remove all non-digit characters
+  const cleaned = String(value).replace(/[^0-9]/g, '');
+
+  if (!cleaned) return '';
+
+  // Convert to number and format with locale
+  const number = parseFloat(cleaned) || 0;
+  return number.toLocaleString('vi-VN');
+};

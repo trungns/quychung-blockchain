@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatCurrencyInput, parseCurrencyInput } from '../utils/formatters';
 import '../styles/TransactionForm.css';
 
 const TransactionForm = ({ type, onSubmit, onCancel }) => {
@@ -6,7 +7,20 @@ const TransactionForm = ({ type, onSubmit, onCancel }) => {
     amount_token: '',
     note: '',
   });
+  const [formattedAmount, setFormattedAmount] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleAmountChange = (e) => {
+    const input = e.target.value;
+
+    // Format the input value
+    const formatted = formatCurrencyInput(input);
+    setFormattedAmount(formatted);
+
+    // Parse and store the actual number
+    const actualAmount = parseCurrencyInput(input);
+    setFormData({ ...formData, amount_token: actualAmount });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,10 +29,11 @@ const TransactionForm = ({ type, onSubmit, onCancel }) => {
     try {
       await onSubmit({
         type,
-        amount_token: parseFloat(formData.amount_token),
+        amount_token: formData.amount_token,
         note: formData.note,
       });
       setFormData({ amount_token: '', note: '' });
+      setFormattedAmount('');
     } catch (error) {
       console.error('Transaction failed:', error);
       alert('Giao dịch thất bại. Vui lòng thử lại.');
@@ -32,15 +47,20 @@ const TransactionForm = ({ type, onSubmit, onCancel }) => {
       <div className="form-group">
         <label>Số tiền (VNĐ) *</label>
         <input
-          type="number"
-          step="0.01"
-          min="0.01"
-          value={formData.amount_token}
-          onChange={(e) => setFormData({ ...formData, amount_token: e.target.value })}
+          type="text"
+          value={formattedAmount}
+          onChange={handleAmountChange}
           required
-          placeholder="0.00"
+          placeholder="0"
           disabled={loading}
+          className="currency-input"
+          inputMode="numeric"
         />
+        {formattedAmount && (
+          <small className="formatted-hint">
+            Số tiền: {formattedAmount} đ
+          </small>
+        )}
       </div>
 
       <div className="form-group">
