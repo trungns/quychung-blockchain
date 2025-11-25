@@ -118,6 +118,10 @@ func main() {
 		// Transaction routes
 		protected.POST("/treasuries/:id/transactions", transactionHandler.CreateTransaction)
 		protected.GET("/treasuries/:id/transactions", transactionHandler.GetTransactions)
+		protected.PUT("/treasuries/:id/transactions/:txId", transactionHandler.UpdateTransaction)
+		protected.DELETE("/treasuries/:id/transactions/:txId", transactionHandler.DeleteTransaction)
+		protected.POST("/treasuries/:id/transactions/:txId/confirm", transactionHandler.ConfirmTransaction)
+		protected.POST("/treasuries/:id/transactions/:txId/reject", transactionHandler.RejectTransaction)
 
 		// Report routes
 		protected.GET("/treasuries/:id/reports/income-by-member", reportHandler.GetMonthlyIncomeByMember)

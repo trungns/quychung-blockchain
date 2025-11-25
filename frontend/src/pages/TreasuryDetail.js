@@ -4,6 +4,7 @@ import { treasuryAPI, transactionAPI } from '../services/api';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
 import MembersSummary from '../components/MembersSummary';
+import PendingTransactions from '../components/PendingTransactions';
 import { formatCurrency } from '../utils/formatters';
 import '../styles/TreasuryDetail.css';
 
@@ -138,6 +139,15 @@ const TreasuryDetail = () => {
             </button>
           )}
         </div>
+
+        {/* Pending Transactions Section - For Treasurer/Admin only */}
+        {treasury.members?.some(m => m.user_id === treasury.creator?.id && (m.role === 'admin' || m.role === 'treasurer')) && (
+          <PendingTransactions
+            treasuryId={id}
+            pendingTransactions={transactions.filter(tx => tx.status === 'pending')}
+            onUpdate={loadTreasuryData}
+          />
+        )}
 
         {/* Transactions Section - Moved up for mobile priority */}
         <div className="transactions-section">

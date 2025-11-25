@@ -52,20 +52,37 @@ const (
 	TransactionTypeExpense TransactionType = "EXPENSE"
 )
 
+// TransactionStatus represents the status of a transaction
+type TransactionStatus string
+
+const (
+	TransactionStatusPending   TransactionStatus = "pending"
+	TransactionStatusConfirmed TransactionStatus = "confirmed"
+	TransactionStatusCompleted TransactionStatus = "completed"
+	TransactionStatusRejected  TransactionStatus = "rejected"
+	TransactionStatusDeleted   TransactionStatus = "deleted"
+)
+
 // Transaction represents a financial transaction
 type Transaction struct {
-	ID          uuid.UUID       `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
-	TreasuryID  uuid.UUID       `gorm:"type:uuid;not null" json:"treasury_id"`
-	Type        TransactionType `gorm:"type:varchar(20);not null" json:"type"`
-	AmountToken float64         `gorm:"type:decimal(20,8);not null" json:"amount_token"`
-	Note        string          `gorm:"type:text" json:"note,omitempty"`
-	CreatedBy   uuid.UUID       `gorm:"type:uuid;not null" json:"created_by"`
-	CreatedAt   time.Time       `json:"created_at"`
+	ID              uuid.UUID         `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
+	TreasuryID      uuid.UUID         `gorm:"type:uuid;not null" json:"treasury_id"`
+	Type            TransactionType   `gorm:"type:varchar(20);not null" json:"type"`
+	AmountToken     float64           `gorm:"type:decimal(20,8);not null" json:"amount_token"`
+	Note            string            `gorm:"type:text" json:"note,omitempty"`
+	CreatedBy       uuid.UUID         `gorm:"type:uuid;not null" json:"created_by"`
+	CreatedAt       time.Time         `json:"created_at"`
+	Status          TransactionStatus `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	ConfirmedAmount *float64          `gorm:"type:decimal(20,8)" json:"confirmed_amount,omitempty"`
+	ConfirmedBy     *uuid.UUID        `gorm:"type:uuid" json:"confirmed_by,omitempty"`
+	ConfirmedAt     *time.Time        `json:"confirmed_at,omitempty"`
+	RejectReason    string            `gorm:"type:text" json:"reject_reason,omitempty"`
 
 	// Relations
-	Treasury Treasury  `gorm:"foreignKey:TreasuryID" json:"treasury,omitempty"`
-	Creator  User      `gorm:"foreignKey:CreatedBy" json:"creator,omitempty"`
-	ChainLog *ChainLog `gorm:"foreignKey:TransactionID" json:"chain_log,omitempty"`
+	Treasury  Treasury  `gorm:"foreignKey:TreasuryID" json:"treasury,omitempty"`
+	Creator   User      `gorm:"foreignKey:CreatedBy" json:"creator,omitempty"`
+	Confirmer *User     `gorm:"foreignKey:ConfirmedBy" json:"confirmer,omitempty"`
+	ChainLog  *ChainLog `gorm:"foreignKey:TransactionID" json:"chain_log,omitempty"`
 }
 
 // ChainLog represents blockchain transaction log
@@ -143,4 +160,21 @@ type UpdateBankAccountRequest struct {
 	AccountNumber string `json:"account_number" binding:"required"`
 	AccountName   string `json:"account_name" binding:"required"`
 	QRCodeURL     string `json:"qr_code_url"`
+}
+
+// ConfirmTransactionRequest represents request to confirm a transaction
+type ConfirmTransactionRequest struct {
+	ConfirmedAmount float64 `json:"confirmed_amount" binding:"required,gt=0"`
+	Note            string  `json:"note"`
+}
+
+// RejectTransactionRequest represents request to reject a transaction
+type RejectTransactionRequest struct {
+	Reason string `json:"reason" binding:"required"`
+}
+
+// UpdateTransactionRequest represents request to update a pending/rejected transaction
+type UpdateTransactionRequest struct {
+	AmountToken float64 `json:"amount_token" binding:"required,gt=0"`
+	Note        string  `json:"note"`
 }

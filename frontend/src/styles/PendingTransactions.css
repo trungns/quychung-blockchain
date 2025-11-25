@@ -1,0 +1,189 @@
+.pending-transactions {
+  margin: 20px 0;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pending-transactions h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.empty-message {
+  text-align: center;
+  color: #666;
+  padding: 20px 0;
+}
+
+.pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pending-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+}
+
+.pending-card.income {
+  border-left: 4px solid #10b981;
+}
+
+.pending-card.expense {
+  border-left: 4px solid #ef4444;
+}
+
+.pending-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.type-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.type-badge.income {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.type-badge.expense {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.pending-header .amount {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.pending-card.income .amount {
+  color: #10b981;
+}
+
+.pending-card.expense .amount {
+  color: #ef4444;
+}
+
+.pending-body {
+  margin-bottom: 12px;
+}
+
+.pending-body .note {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.pending-body .meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pending-body .meta small {
+  color: #666;
+  font-size: 12px;
+}
+
+.pending-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn-confirm {
+  padding: 8px 16px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-confirm:hover {
+  background-color: #059669;
+}
+
+.btn-reject {
+  padding: 8px 16px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-reject:hover {
+  background-color: #dc2626;
+}
+
+.confirm-info {
+  background-color: #f9fafb;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.confirm-info p {
+  margin: 8px 0;
+  color: #333;
+}
+
+.btn-danger {
+  padding: 10px 20px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .pending-transactions {
+    padding: 16px;
+  }
+
+  .pending-header .amount {
+    font-size: 16px;
+  }
+
+  .pending-actions {
+    flex-direction: column;
+  }
+
+  .btn-confirm,
+  .btn-reject {
+    width: 100%;
+  }
+}

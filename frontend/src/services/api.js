@@ -47,7 +47,14 @@ export const treasuryAPI = {
 // Transaction API
 export const transactionAPI = {
   create: (treasuryId, data) => api.post(`/treasuries/${treasuryId}/transactions`, data),
-  getAll: (treasuryId) => api.get(`/treasuries/${treasuryId}/transactions`),
+  getAll: (treasuryId, statusFilter) => {
+    const params = statusFilter ? { status: statusFilter } : {};
+    return api.get(`/treasuries/${treasuryId}/transactions`, { params });
+  },
+  update: (treasuryId, txId, data) => api.put(`/treasuries/${treasuryId}/transactions/${txId}`, data),
+  delete: (treasuryId, txId) => api.delete(`/treasuries/${treasuryId}/transactions/${txId}`),
+  confirm: (treasuryId, txId, data) => api.post(`/treasuries/${treasuryId}/transactions/${txId}/confirm`, data),
+  reject: (treasuryId, txId, data) => api.post(`/treasuries/${treasuryId}/transactions/${txId}/reject`, data),
 };
 
 // Report API

@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatCurrency, formatDate } from '../utils/formatters';
+import TransactionStatusBadge from './TransactionStatusBadge';
 import '../styles/TransactionList.css';
 
 const TransactionList = ({ transactions }) => {
@@ -21,6 +22,7 @@ const TransactionList = ({ transactions }) => {
             <th>Số tiền</th>
             <th>Ghi chú</th>
             <th>Người tạo</th>
+            <th>Trạng thái</th>
             <th>Blockchain</th>
           </tr>
         </thead>
@@ -39,13 +41,16 @@ const TransactionList = ({ transactions }) => {
               </td>
               <td className="note-cell">{transaction.note || '-'}</td>
               <td className="creator-cell">{transaction.creator?.name || transaction.creator?.email}</td>
+              <td className="status-cell">
+                <TransactionStatusBadge status={transaction.status} />
+              </td>
               <td className="blockchain-cell">
                 {transaction.chain_log?.tx_hash ? (
                   <span className="tx-hash" title={transaction.chain_log.tx_hash}>
                     {transaction.chain_log.tx_hash.substring(0, 10)}...
                   </span>
                 ) : (
-                  <span className="pending">Đang xử lý...</span>
+                  <span className="pending">-</span>
                 )}
               </td>
             </tr>
@@ -71,6 +76,9 @@ const TransactionList = ({ transactions }) => {
               <div className="meta">
                 <span>{formatDate(transaction.created_at)}</span>
                 <span>{transaction.creator?.name || transaction.creator?.email}</span>
+              </div>
+              <div className="status-info">
+                <TransactionStatusBadge status={transaction.status} />
               </div>
               {transaction.chain_log?.tx_hash && (
                 <div className="tx-info">
