@@ -208,6 +208,99 @@ func (h *TreasuryHandler) AddMember(c *gin.Context) {
 	c.JSON(http.StatusCreated, member)
 }
 
+// UpdateMemberRole updates a member's role (Admin only)
+func (h *TreasuryHandler) UpdateMemberRole(c *gin.Context) {
+	treasuryID := c.Param("id")
+	memberID := c.Param("memberId")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if requester is admin
+	var requesterMember models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ? AND role = ?", treasuryID, userID, "admin").
+		First(&requesterMember).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admin can update member roles"})
+		return
+	}
+
+	// Get the member to update
+	var member models.Member
+	if err := database.DB.Where("id = ? AND treasury_id = ?", memberID, treasuryID).
+		First(&member).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Member not found"})
+		return
+	}
+
+	// Parse request
+	var req models.UpdateMemberRoleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Update role
+	if err := database.DB.Model(&member).Update("role", req.Role).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update role"})
+		return
+	}
+
+	// Reload member with user info
+	database.DB.Preload("User").First(&member, member.ID)
+
+	c.JSON(http.StatusOK, member)
+}
+
+// RemoveMember removes a member from treasury (Admin only)
+func (h *TreasuryHandler) RemoveMember(c *gin.Context) {
+	treasuryID := c.Param("id")
+	memberID := c.Param("memberId")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if requester is admin
+	var requesterMember models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ? AND role = ?", treasuryID, userID, "admin").
+		First(&requesterMember).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admin can remove members"})
+		return
+	}
+
+	// Get the member to remove
+	var member models.Member
+	if err := database.DB.Where("id = ? AND treasury_id = ?", memberID, treasuryID).
+		First(&member).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Member not found"})
+		return
+	}
+
+	// Cannot remove yourself if you're the last admin
+	if member.UserID == userID {
+		var adminCount int64
+		database.DB.Model(&models.Member{}).
+			Where("treasury_id = ? AND role = ?", treasuryID, "admin").
+			Count(&adminCount)
+
+		if adminCount <= 1 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot remove the last admin"})
+			return
+		}
+	}
+
+	// Delete member
+	if err := database.DB.Delete(&member).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove member"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Member removed successfully"})
+}
+
 // GetBalance gets the balance of a treasury
 func (h *TreasuryHandler) GetBalance(c *gin.Context) {
 	treasuryID := c.Param("id")

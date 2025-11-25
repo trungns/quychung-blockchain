@@ -178,3 +178,8 @@ type UpdateTransactionRequest struct {
 	AmountToken float64 `json:"amount_token" binding:"required,gt=0"`
 	Note        string  `json:"note"`
 }
+
+// UpdateMemberRoleRequest represents request to update a member's role
+type UpdateMemberRoleRequest struct {
+	Role string `json:"role" binding:"required,oneof=admin treasurer member"`
+}

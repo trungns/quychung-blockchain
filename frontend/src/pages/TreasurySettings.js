@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { treasuryAPI } from '../services/api';
 import BankAccountSettings from '../components/BankAccountSettings';
+import MemberManagement from '../components/MemberManagement';
 import '../styles/TreasurySettings.css';
 
 const TreasurySettings = () => {
@@ -63,6 +64,12 @@ const TreasurySettings = () => {
       </header>
 
       <div className="settings-content">
+        <MemberManagement
+          treasuryId={id}
+          members={treasury.members || []}
+          currentUserId={treasury.creator?.id}
+          onUpdate={loadTreasury}
+        />
         <BankAccountSettings treasuryId={id} />
       </div>
     </div>

@@ -110,6 +110,8 @@ func main() {
 		protected.GET("/treasuries", treasuryHandler.GetTreasuries)
 		protected.GET("/treasuries/:id", treasuryHandler.GetTreasury)
 		protected.POST("/treasuries/:id/members", treasuryHandler.AddMember)
+		protected.PUT("/treasuries/:id/members/:memberId", treasuryHandler.UpdateMemberRole)
+		protected.DELETE("/treasuries/:id/members/:memberId", treasuryHandler.RemoveMember)
 		protected.GET("/treasuries/:id/balance", treasuryHandler.GetBalance)
 		protected.GET("/treasuries/:id/bank-account", treasuryHandler.GetBankAccount)
 		protected.PUT("/treasuries/:id/bank-account", treasuryHandler.UpdateBankAccount)
