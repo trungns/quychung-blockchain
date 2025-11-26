@@ -56,11 +56,20 @@ const (
 type TransactionStatus string
 
 const (
-	TransactionStatusPending   TransactionStatus = "pending"
-	TransactionStatusConfirmed TransactionStatus = "confirmed"
-	TransactionStatusCompleted TransactionStatus = "completed"
-	TransactionStatusRejected  TransactionStatus = "rejected"
-	TransactionStatusDeleted   TransactionStatus = "deleted"
+	TransactionStatusPending   TransactionStatus = "pending"   // Chờ thủ quỹ xác nhận
+	TransactionStatusConfirmed TransactionStatus = "confirmed" // Đã ghi vào sổ, tính balance
+	TransactionStatusRejected  TransactionStatus = "rejected"  // Bị từ chối
+	TransactionStatusDeleted   TransactionStatus = "deleted"   // Đã xóa
+)
+
+// BlockchainStatus represents the status of blockchain logging
+type BlockchainStatus string
+
+const (
+	BlockchainStatusNone    BlockchainStatus = "none"    // Chưa ghi blockchain
+	BlockchainStatusPending BlockchainStatus = "pending" // Đang ghi lên blockchain
+	BlockchainStatusSuccess BlockchainStatus = "success" // Đã ghi thành công
+	BlockchainStatusFailed  BlockchainStatus = "failed"  // Ghi thất bại (có thể retry)
 )
 
 // Transaction represents a financial transaction
@@ -87,13 +96,15 @@ type Transaction struct {
 
 // ChainLog represents blockchain transaction log
 type ChainLog struct {
-	ID            uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
-	TransactionID uuid.UUID `gorm:"type:uuid;not null;unique" json:"transaction_id"`
-	TxHash        string    `gorm:"type:varchar(66)" json:"tx_hash,omitempty"`
-	DetailHash    string    `gorm:"type:varchar(66)" json:"detail_hash,omitempty"`
-	BlockNumber   int64     `gorm:"type:bigint" json:"block_number,omitempty"`
-	Status        string    `gorm:"type:varchar(20);default:'pending'" json:"status"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID            uuid.UUID        `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
+	TransactionID uuid.UUID        `gorm:"type:uuid;not null;unique" json:"transaction_id"`
+	TxHash        string           `gorm:"type:varchar(66)" json:"tx_hash,omitempty"`
+	DetailHash    string           `gorm:"type:varchar(66)" json:"detail_hash,omitempty"`
+	BlockNumber   int64            `gorm:"type:bigint" json:"block_number,omitempty"`
+	Status        BlockchainStatus `gorm:"type:varchar(20);default:'none'" json:"status"`
+	ErrorDetail   string           `gorm:"type:text" json:"error_detail,omitempty"`
+	CreatedAt     time.Time        `json:"created_at"`
+	UpdatedAt     time.Time        `json:"updated_at"`
 
 	// Relations
 	Transaction Transaction `gorm:"foreignKey:TransactionID" json:"transaction,omitempty"`

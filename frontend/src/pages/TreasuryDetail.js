@@ -158,7 +158,12 @@ const TreasuryDetail = () => {
         {/* Transactions Section - Moved up for mobile priority */}
         <div className="transactions-section">
           <h3>Lịch sử giao dịch</h3>
-          <TransactionList transactions={transactions} />
+          <TransactionList
+            transactions={transactions}
+            treasuryId={id}
+            userRole={currentUserRole}
+            onUpdate={loadTreasuryData}
+          />
         </div>
 
         {/* Members Section - Using new MembersSummary component */}

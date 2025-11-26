@@ -62,7 +62,7 @@ func (h *ReportHandler) GetMonthlyIncomeByMember(c *gin.Context) {
 		JOIN users u ON t.created_by = u.id
 		WHERE t.treasury_id = $1
 			AND t.type = 'INCOME'
-			AND t.status = 'completed'
+			AND t.status = 'confirmed'
 			AND EXTRACT(YEAR FROM t.created_at) = $2
 		GROUP BY u.id, u.name, u.email, TO_CHAR(t.created_at, 'YYYY-MM')
 		ORDER BY month DESC, user_name ASC
@@ -98,7 +98,7 @@ func (h *ReportHandler) GetMonthlyExpense(c *gin.Context) {
 			COUNT(*) as count
 		FROM transactions
 		WHERE treasury_id = $1
-			AND status = 'completed'
+			AND status = 'confirmed'
 			AND type = 'EXPENSE'
 			AND EXTRACT(YEAR FROM created_at) = $2
 		GROUP BY TO_CHAR(created_at, 'YYYY-MM')
@@ -139,7 +139,7 @@ func (h *ReportHandler) GetYearlySummary(c *gin.Context) {
 			COUNT(CASE WHEN type = 'EXPENSE' THEN 1 END) as expense_count
 		FROM transactions
 		WHERE treasury_id = $1
-			AND status = 'completed'
+			AND status = 'confirmed'
 		GROUP BY EXTRACT(YEAR FROM created_at)
 		ORDER BY year DESC
 	`
@@ -186,7 +186,7 @@ func (h *ReportHandler) GetTopContributors(c *gin.Context) {
 		JOIN users u ON t.created_by = u.id
 		WHERE t.treasury_id = $1
 			AND t.type = 'INCOME'
-			AND t.status = 'completed'
+			AND t.status = 'confirmed'
 		GROUP BY u.id, u.name, u.email, u.avatar_url
 		ORDER BY total_income DESC
 		LIMIT $2

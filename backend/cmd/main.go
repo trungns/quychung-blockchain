@@ -124,6 +124,7 @@ func main() {
 		protected.DELETE("/treasuries/:id/transactions/:txId", transactionHandler.DeleteTransaction)
 		protected.POST("/treasuries/:id/transactions/:txId/confirm", transactionHandler.ConfirmTransaction)
 		protected.POST("/treasuries/:id/transactions/:txId/reject", transactionHandler.RejectTransaction)
+		protected.POST("/treasuries/:id/transactions/:txId/retry-blockchain", transactionHandler.RetryBlockchainLog)
 
 		// Report routes
 		protected.GET("/treasuries/:id/reports/income-by-member", reportHandler.GetMonthlyIncomeByMember)

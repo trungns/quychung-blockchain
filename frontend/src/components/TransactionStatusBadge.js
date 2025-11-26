@@ -4,8 +4,7 @@ import '../styles/TransactionStatusBadge.css';
 const TransactionStatusBadge = ({ status }) => {
   const statusConfig = {
     pending: { label: 'Chờ xác nhận', color: 'orange', icon: '⏳' },
-    confirmed: { label: 'Đang xử lý', color: 'blue', icon: '⚙️' },
-    completed: { label: 'Hoàn thành', color: 'green', icon: '✓' },
+    confirmed: { label: 'Đã ghi sổ', color: 'green', icon: '✓' },
     rejected: { label: 'Đã từ chối', color: 'red', icon: '✗' },
     deleted: { label: 'Đã xóa', color: 'gray', icon: '🗑' },
   };

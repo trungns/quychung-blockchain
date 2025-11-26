@@ -156,3 +156,38 @@
     font-size: 0.75rem;
   }
 }
+
+/* Retry Blockchain Button */
+.btn-retry-blockchain {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.2em;
+  transition: all 0.2s;
+}
+
+.btn-retry-blockchain:hover:not(:disabled) {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+.btn-retry-blockchain:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-retry-blockchain.mobile {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  font-size: 0.9em;
+}
+
+.action-cell {
+  text-align: center;
+  width: 80px;
+}

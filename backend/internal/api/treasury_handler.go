@@ -317,16 +317,17 @@ func (h *TreasuryHandler) GetBalance(c *gin.Context) {
 		return
 	}
 
-	// Calculate balance - use confirmed_amount for confirmed/completed transactions
+	// Calculate balance - use confirmed_amount for CONFIRMED transactions
+	// Note: Only CONFIRMED transactions are counted (blockchain status is separate)
 	var totalIncome, totalExpense float64
 
 	database.DB.Model(&models.Transaction{}).
-		Where("treasury_id = ? AND type = ? AND status IN ?", treasuryID, models.TransactionTypeIncome, []string{"completed"}).
+		Where("treasury_id = ? AND type = ? AND status = ?", treasuryID, models.TransactionTypeIncome, models.TransactionStatusConfirmed).
 		Select("COALESCE(SUM(COALESCE(confirmed_amount, amount_token)), 0)").
 		Scan(&totalIncome)
 
 	database.DB.Model(&models.Transaction{}).
-		Where("treasury_id = ? AND type = ? AND status IN ?", treasuryID, models.TransactionTypeExpense, []string{"completed"}).
+		Where("treasury_id = ? AND type = ? AND status = ?", treasuryID, models.TransactionTypeExpense, models.TransactionStatusConfirmed).
 		Select("COALESCE(SUM(COALESCE(confirmed_amount, amount_token)), 0)").
 		Scan(&totalExpense)
 

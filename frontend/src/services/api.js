@@ -57,6 +57,7 @@ export const transactionAPI = {
   delete: (treasuryId, txId) => api.delete(`/treasuries/${treasuryId}/transactions/${txId}`),
   confirm: (treasuryId, txId, data) => api.post(`/treasuries/${treasuryId}/transactions/${txId}/confirm`, data),
   reject: (treasuryId, txId, data) => api.post(`/treasuries/${treasuryId}/transactions/${txId}/reject`, data),
+  retryBlockchain: (treasuryId, txId) => api.post(`/treasuries/${treasuryId}/transactions/${txId}/retry-blockchain`),
 };
 
 // Report API

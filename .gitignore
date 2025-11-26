@@ -52,3 +52,8 @@ tmp/
 temp/
 k8s/secret.yaml
 SECRETS_FOR_DEVTRON.txt
+
+# Credentials and secrets documentation
+# These files contain real credentials - NEVER commit!
+docs/references/ENVIRONMENT_CREDENTIALS.md
+docs/references/CREDENTIALS_QUICK_REFERENCE.md

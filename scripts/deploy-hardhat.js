@@ -59,7 +59,7 @@ async function main() {
   console.log("\n✨ Deployment completed successfully!");
 
   // Test the contract
-  console.log("\n🧪 Testing contract...");
+  console.log("\n🧪 Testing minimal contract...");
 
   // Create a test treasury address
   const testTreasuryAddress = "0x1111111111111111111111111111111111111111";
@@ -67,22 +67,14 @@ async function main() {
   // Create detail hash from transaction details
   const detailHash = ethers.keccak256(ethers.toUtf8Bytes("Test transaction - 100 tokens income"));
 
+  console.log("📝 Sending test transaction (only event)...");
   const tx = await treasuryLogger.logTransaction(
     testTreasuryAddress, // treasury address
-    ethers.parseEther("100"), // amount in wei
-    true, // isIncome
-    detailHash // detail hash
+    detailHash // detail hash only
   );
-  await tx.wait();
-  console.log("✅ Test transaction logged successfully!");
-
-  // Query the transaction
-  const logCount = await treasuryLogger.getTreasuryLogCount(testTreasuryAddress);
-  console.log(`📊 Found ${logCount} transaction(s) for treasury ${testTreasuryAddress}`);
-
-  // Get total log count
-  const totalLogs = await treasuryLogger.logCount();
-  console.log(`📊 Total logs in system: ${totalLogs}`);
+  const receipt = await tx.wait();
+  console.log(`✅ Test transaction logged! Gas used: ${receipt.gasUsed.toString()}`);
+  console.log(`🎯 Ultra-minimal contract - only emits event, no storage!`);
 
   return {
     address: contractAddress,

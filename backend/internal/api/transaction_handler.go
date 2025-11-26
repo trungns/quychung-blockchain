@@ -195,90 +195,25 @@ func (h *TransactionHandler) ConfirmTransaction(c *gin.Context) {
 		return
 	}
 
-	// Check if chain log already exists
-	var existingChainLog models.ChainLog
-	chainLogExists := tx.Where("transaction_id = ?", transaction.ID).First(&existingChainLog).Error == nil
-
-	var chainLog models.ChainLog
-	if chainLogExists {
-		// Use existing chain log
-		chainLog = existingChainLog
-	} else {
-		// Create new chain log
-		chainLog = models.ChainLog{
-			ID:            uuid.New(),
-			TransactionID: transaction.ID,
-			Status:        "pending",
-		}
-		if err := tx.Create(&chainLog).Error; err != nil {
-			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create chain log"})
-			return
-		}
+	// Create chain log with "none" status - will be updated when blockchain logging happens
+	chainLog := models.ChainLog{
+		ID:            uuid.New(),
+		TransactionID: transaction.ID,
+		Status:        models.BlockchainStatusNone,
+	}
+	if err := tx.Create(&chainLog).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create chain log"})
+		return
 	}
 
 	tx.Commit()
 
-	// Send transaction to blockchain (async)
-	go func() {
-		log.Printf("DEBUG: ========== Starting blockchain logging for transaction %s ==========", transaction.ID)
-		log.Printf("DEBUG: Treasury ID: %s, Treasury Chain Address: %s", treasury.ID, treasury.ChainAddress)
-		log.Printf("DEBUG: Transaction Type: %s, Confirmed Amount: %.2f", transaction.Type, req.ConfirmedAmount)
+	// IMPORTANT: Transaction is now CONFIRMED (already counted in balance/reports)
+	// Blockchain logging is separate and async - just for verification
 
-		if h.blockchainService == nil {
-			log.Printf("ERROR: Blockchain service is NIL for transaction %s", transaction.ID)
-			database.DB.Model(&chainLog).Updates(map[string]interface{}{
-				"status": "failed",
-			})
-			database.DB.Model(&transaction).Update("status", models.TransactionStatusPending)
-			return
-		}
-
-		log.Printf("DEBUG: Blockchain service initialized successfully")
-
-		ctx := context.Background()
-		treasuryAddr := common.HexToAddress(treasury.ChainAddress)
-
-		// Use confirmed amount for blockchain
-		transaction.AmountToken = req.ConfirmedAmount
-
-		log.Printf("DEBUG: Calling blockchain service LogTransaction...")
-		log.Printf("DEBUG: Parameters - Treasury Address: %s, Amount: %.2f, Type: %s",
-			treasuryAddr.Hex(), req.ConfirmedAmount, transaction.Type)
-
-		txHash, detailHash, err := h.blockchainService.LogTransaction(ctx, treasuryAddr, &transaction)
-		if err != nil {
-			log.Printf("ERROR: ========== BLOCKCHAIN LOG FAILED ==========")
-			log.Printf("ERROR: Transaction %s failed to log to blockchain", transaction.ID)
-			log.Printf("ERROR: Error details: %v", err)
-			log.Printf("ERROR: Error type: %T", err)
-			database.DB.Model(&chainLog).Updates(map[string]interface{}{
-				"status":       "failed",
-				"error_detail": err.Error(),
-			})
-			// DO NOT rollback to pending - keep as confirmed so we can retry later
-			log.Printf("ERROR: Transaction kept in CONFIRMED status for manual retry")
-			return
-		}
-
-		log.Printf("DEBUG: Blockchain transaction sent successfully!")
-		log.Printf("DEBUG: TX Hash: %s", txHash)
-		log.Printf("DEBUG: Detail Hash: %s", detailHash)
-
-		// Update chain log and transaction status to COMPLETED
-		log.Printf("DEBUG: Updating chain_log and transaction status to COMPLETED...")
-		database.DB.Model(&chainLog).Updates(map[string]interface{}{
-			"tx_hash":     txHash,
-			"detail_hash": detailHash,
-			"status":      "success",
-		})
-
-		database.DB.Model(&transaction).Update("status", models.TransactionStatusCompleted)
-
-		log.Printf("SUCCESS: ========== BLOCKCHAIN LOG COMPLETED ==========")
-		log.Printf("SUCCESS: Transaction %s marked as COMPLETED", transaction.ID)
-		log.Printf("SUCCESS: TX Hash: %s", txHash)
-	}()
+	// Try to log to blockchain (async, non-blocking)
+	go h.logTransactionToBlockchain(&transaction, &chainLog, &treasury, req.ConfirmedAmount)
 
 	// Reload transaction with relations
 	database.DB.Preload("Creator").Preload("Confirmer").Preload("ChainLog").
@@ -432,10 +367,9 @@ func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 		return
 	}
 
-	// Cannot delete CONFIRMED or COMPLETED transactions (already on blockchain)
-	if transaction.Status == models.TransactionStatusConfirmed ||
-	   transaction.Status == models.TransactionStatusCompleted {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete confirmed or completed transactions"})
+	// Cannot delete CONFIRMED transactions (already counted in balance/reports)
+	if transaction.Status == models.TransactionStatusConfirmed {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete confirmed transactions"})
 		return
 	}
 
@@ -446,4 +380,122 @@ func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Transaction deleted successfully"})
+}
+
+// logTransactionToBlockchain logs a transaction to blockchain (async helper)
+func (h *TransactionHandler) logTransactionToBlockchain(
+	transaction *models.Transaction,
+	chainLog *models.ChainLog,
+	treasury *models.Treasury,
+	confirmedAmount float64,
+) {
+	log.Printf("BLOCKCHAIN: Starting async blockchain logging for transaction %s", transaction.ID)
+
+	if h.blockchainService == nil {
+		log.Printf("BLOCKCHAIN ERROR: Service is nil")
+		database.DB.Model(chainLog).Updates(map[string]interface{}{
+			"status":       models.BlockchainStatusFailed,
+			"error_detail": "Blockchain service not available",
+		})
+		return
+	}
+
+	// Update status to pending
+	database.DB.Model(chainLog).Update("status", models.BlockchainStatusPending)
+
+	ctx := context.Background()
+	treasuryAddr := common.HexToAddress(treasury.ChainAddress)
+
+	// Use confirmed amount for blockchain
+	transaction.AmountToken = confirmedAmount
+
+	log.Printf("BLOCKCHAIN: Logging to chain - Treasury: %s, Amount: %.2f",
+		treasuryAddr.Hex(), confirmedAmount)
+
+	txHash, detailHash, err := h.blockchainService.LogTransaction(ctx, treasuryAddr, transaction)
+	if err != nil {
+		log.Printf("BLOCKCHAIN ERROR: Failed - %v", err)
+		database.DB.Model(chainLog).Updates(map[string]interface{}{
+			"status":       models.BlockchainStatusFailed,
+			"error_detail": err.Error(),
+		})
+		return
+	}
+
+	log.Printf("BLOCKCHAIN SUCCESS: TX Hash: %s", txHash)
+	database.DB.Model(chainLog).Updates(map[string]interface{}{
+		"tx_hash":      txHash,
+		"detail_hash":  detailHash,
+		"status":       models.BlockchainStatusSuccess,
+		"error_detail": "",
+	})
+}
+
+// RetryBlockchainLog retries blockchain logging for a confirmed transaction (Admin/Treasurer only)
+func (h *TransactionHandler) RetryBlockchainLog(c *gin.Context) {
+	treasuryID := c.Param("id")
+	transactionID := c.Param("txId")
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if user is treasurer or admin
+	var member models.Member
+	if err := database.DB.Where("treasury_id = ? AND user_id = ? AND role IN ?",
+		treasuryID, userID, []string{"admin", "treasurer"}).First(&member).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only treasurers and admins can retry blockchain logging"})
+		return
+	}
+
+	// Get transaction
+	var transaction models.Transaction
+	if err := database.DB.Preload("ChainLog").
+		Where("id = ? AND treasury_id = ?", transactionID, treasuryID).
+		First(&transaction).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Transaction not found"})
+		return
+	}
+
+	// Only allow retry for CONFIRMED transactions
+	if transaction.Status != models.TransactionStatusConfirmed {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Only confirmed transactions can retry blockchain logging"})
+		return
+	}
+
+	// Check if chain log exists
+	if transaction.ChainLog == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Chain log not found"})
+		return
+	}
+
+	// Only retry if status is 'none' or 'failed'
+	if transaction.ChainLog.Status != models.BlockchainStatusNone &&
+		transaction.ChainLog.Status != models.BlockchainStatusFailed {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Can only retry blockchain logging for transactions with 'none' or 'failed' status",
+		})
+		return
+	}
+
+	// Get treasury
+	var treasury models.Treasury
+	if err := database.DB.First(&treasury, "id = ?", treasuryID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Treasury not found"})
+		return
+	}
+
+	// Retry blockchain logging (async)
+	confirmedAmount := transaction.AmountToken
+	if transaction.ConfirmedAmount != nil {
+		confirmedAmount = *transaction.ConfirmedAmount
+	}
+
+	go h.logTransactionToBlockchain(&transaction, transaction.ChainLog, &treasury, confirmedAmount)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Blockchain logging retry initiated",
+		"status":  "pending",
+	})
 }

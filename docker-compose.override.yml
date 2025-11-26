@@ -1,8 +1,0 @@
-services:
-  backend:
-    environment:
-      - BLOCKCHAIN_RPC=https://rpc-amoy.polygon.technology
-      - TREASURY_PRIVATE_KEY=0xf608d9fad2f4f7fb588aac7ea8b3c32d976d2769044d90db2762a71ca6f10086
-    depends_on:
-      postgres:
-        condition: service_healthy

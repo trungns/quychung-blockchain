@@ -1,0 +1,49 @@
+.blockchain-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.blockchain-icon {
+  font-size: 0.9em;
+}
+
+.blockchain-label {
+  font-size: 0.85em;
+}
+
+.tx-hash-short {
+  font-size: 0.7em;
+  opacity: 0.8;
+  font-family: monospace;
+}
+
+.blockchain-gray {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.blockchain-blue {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.blockchain-green {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.blockchain-red {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.blockchain-badge:hover {
+  opacity: 0.9;
+  cursor: help;
+}

@@ -45,12 +45,15 @@ services:
       retries: 20
       start_period: 30s
 
-  # Backend (Golang)
-  backend:
+  # App (Backend with embedded Frontend)
+  # Single service architecture - same as production
+  app:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: quychung-backend
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        - REACT_APP_GOOGLE_CLIENT_ID=${REACT_APP_GOOGLE_CLIENT_ID}
+    container_name: quychung-app
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -58,12 +61,12 @@ services:
       - DB_PASSWORD=quychung123
       - DB_NAME=quychung
       - BLOCKCHAIN_RPC=http://hardhat:8545
-      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_SECRET=${JWT_SECRET}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GOOGLE_REDIRECT_URL=http://localhost:3000/auth/callback
+      - GOOGLE_REDIRECT_URL=${GOOGLE_REDIRECT_URL}
       - PORT=8080
-      - TREASURY_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+      - TREASURY_PRIVATE_KEY=${TREASURY_PRIVATE_KEY}
     ports:
       - "8080:8080"
     volumes:
@@ -73,23 +76,6 @@ services:
         condition: service_healthy
       hardhat:
         condition: service_healthy
-    networks:
-      - quychung-network
-    restart: unless-stopped
-
-  # Frontend (React)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: quychung-frontend
-    environment:
-      - REACT_APP_API_URL=http://localhost:8080
-      - REACT_APP_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
     networks:
       - quychung-network
     restart: unless-stopped
