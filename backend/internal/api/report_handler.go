@@ -56,12 +56,13 @@ func (h *ReportHandler) GetMonthlyIncomeByMember(c *gin.Context) {
 			u.name as user_name,
 			u.email as user_email,
 			TO_CHAR(t.created_at, 'YYYY-MM') as month,
-			SUM(t.amount_token) as total,
+			SUM(COALESCE(t.confirmed_amount, t.amount_token)) as total,
 			COUNT(*) as count
 		FROM transactions t
 		JOIN users u ON t.created_by = u.id
 		WHERE t.treasury_id = $1
 			AND t.type = 'INCOME'
+			AND t.status = 'completed'
 			AND EXTRACT(YEAR FROM t.created_at) = $2
 		GROUP BY u.id, u.name, u.email, TO_CHAR(t.created_at, 'YYYY-MM')
 		ORDER BY month DESC, user_name ASC
@@ -93,10 +94,11 @@ func (h *ReportHandler) GetMonthlyExpense(c *gin.Context) {
 	query := `
 		SELECT
 			TO_CHAR(created_at, 'YYYY-MM') as month,
-			SUM(amount_token) as total,
+			SUM(COALESCE(confirmed_amount, amount_token)) as total,
 			COUNT(*) as count
 		FROM transactions
 		WHERE treasury_id = $1
+			AND status = 'completed'
 			AND type = 'EXPENSE'
 			AND EXTRACT(YEAR FROM created_at) = $2
 		GROUP BY TO_CHAR(created_at, 'YYYY-MM')
@@ -130,13 +132,14 @@ func (h *ReportHandler) GetYearlySummary(c *gin.Context) {
 	query := `
 		SELECT
 			EXTRACT(YEAR FROM created_at)::int as year,
-			COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount_token ELSE 0 END), 0) as total_income,
-			COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount_token ELSE 0 END), 0) as total_expense,
-			COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount_token ELSE -amount_token END), 0) as balance,
+			COALESCE(SUM(CASE WHEN type = 'INCOME' THEN COALESCE(confirmed_amount, amount_token) ELSE 0 END), 0) as total_income,
+			COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN COALESCE(confirmed_amount, amount_token) ELSE 0 END), 0) as total_expense,
+			COALESCE(SUM(CASE WHEN type = 'INCOME' THEN COALESCE(confirmed_amount, amount_token) ELSE -COALESCE(confirmed_amount, amount_token) END), 0) as balance,
 			COUNT(CASE WHEN type = 'INCOME' THEN 1 END) as income_count,
 			COUNT(CASE WHEN type = 'EXPENSE' THEN 1 END) as expense_count
 		FROM transactions
 		WHERE treasury_id = $1
+			AND status = 'completed'
 		GROUP BY EXTRACT(YEAR FROM created_at)
 		ORDER BY year DESC
 	`
@@ -177,11 +180,13 @@ func (h *ReportHandler) GetTopContributors(c *gin.Context) {
 			u.name as user_name,
 			u.email as user_email,
 			u.avatar_url as user_avatar,
-			SUM(t.amount_token) as total_income,
+			SUM(COALESCE(t.confirmed_amount, t.amount_token)) as total_income,
 			COUNT(*) as count
 		FROM transactions t
 		JOIN users u ON t.created_by = u.id
-		WHERE t.treasury_id = $1 AND t.type = 'INCOME'
+		WHERE t.treasury_id = $1
+			AND t.type = 'INCOME'
+			AND t.status = 'completed'
 		GROUP BY u.id, u.name, u.email, u.avatar_url
 		ORDER BY total_income DESC
 		LIMIT $2

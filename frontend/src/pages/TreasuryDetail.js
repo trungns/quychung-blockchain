@@ -19,6 +19,7 @@ const TreasuryDetail = () => {
   const [transactionType, setTransactionType] = useState('INCOME');
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberEmail, setMemberEmail] = useState('');
+  const [currentUserRole, setCurrentUserRole] = useState(null);
 
   useEffect(() => {
     loadTreasuryData();
@@ -35,6 +36,11 @@ const TreasuryDetail = () => {
       setTreasury(treasuryRes.data);
       setBalance(balanceRes.data);
       setTransactions(transactionsRes.data);
+
+      // Determine current user's role
+      const currentUserId = treasuryRes.data.creator?.id;
+      const currentMember = treasuryRes.data.members?.find(m => m.user_id === currentUserId);
+      setCurrentUserRole(currentMember?.role || null);
     } catch (error) {
       console.error('Failed to load treasury data:', error);
       alert('Không thể tải dữ liệu quỹ');
@@ -141,7 +147,7 @@ const TreasuryDetail = () => {
         </div>
 
         {/* Pending Transactions Section - For Treasurer/Admin only */}
-        {treasury.members?.some(m => m.user_id === treasury.creator?.id && (m.role === 'admin' || m.role === 'treasurer')) && (
+        {(currentUserRole === 'admin' || currentUserRole === 'treasurer') && (
           <PendingTransactions
             treasuryId={id}
             pendingTransactions={transactions.filter(tx => tx.status === 'pending')}
