@@ -137,17 +137,27 @@ func (s *BlockchainService) LogTransaction(
 	treasuryAddr common.Address,
 	transaction *models.Transaction,
 ) (string, string, error) {
+	log.Printf("BLOCKCHAIN: ========== LogTransaction START ==========")
+	log.Printf("BLOCKCHAIN: Transaction ID: %s", transaction.ID)
+	log.Printf("BLOCKCHAIN: Treasury Address: %s", treasuryAddr.Hex())
+	log.Printf("BLOCKCHAIN: Contract Address: %s", s.contractAddr.Hex())
+	log.Printf("BLOCKCHAIN: Chain ID: %s", s.chainID.String())
+
 	// Create detail hash from transaction data
 	detailHash := s.createDetailHash(transaction)
+	log.Printf("BLOCKCHAIN: Detail hash created: 0x%x", detailHash)
 
 	// Convert amount to wei (assuming 18 decimals)
 	amount := new(big.Float).SetFloat64(transaction.AmountToken)
 	weiAmount := new(big.Float).Mul(amount, big.NewFloat(1e18))
 	amountInt, _ := weiAmount.Int(nil)
+	log.Printf("BLOCKCHAIN: Amount: %.2f tokens = %s wei", transaction.AmountToken, amountInt.String())
 
 	isIncome := transaction.Type == models.TransactionTypeIncome
+	log.Printf("BLOCKCHAIN: Transaction type: %s (isIncome=%v)", transaction.Type, isIncome)
 
 	// Prepare transaction data
+	log.Printf("BLOCKCHAIN: Packing contract method 'logTransaction'...")
 	data, err := s.contractABI.Pack(
 		"logTransaction",
 		treasuryAddr,
@@ -156,33 +166,47 @@ func (s *BlockchainService) LogTransaction(
 		detailHash,
 	)
 	if err != nil {
+		log.Printf("BLOCKCHAIN ERROR: Failed to pack transaction data: %v", err)
 		return "", "", fmt.Errorf("failed to pack transaction data: %w", err)
 	}
+	log.Printf("BLOCKCHAIN: Contract data packed successfully (%d bytes)", len(data))
 
 	// Get account address
 	publicKey := s.privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
+		log.Printf("BLOCKCHAIN ERROR: Failed to cast public key to ECDSA")
 		return "", "", fmt.Errorf("failed to cast public key to ECDSA")
 	}
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	log.Printf("BLOCKCHAIN: From address: %s", fromAddress.Hex())
 
 	// Get nonce
+	log.Printf("BLOCKCHAIN: Getting nonce from network...")
 	nonce, err := s.client.PendingNonceAt(ctx, fromAddress)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to get nonce: %w", err)
+		log.Printf("BLOCKCHAIN ERROR: Failed to get nonce: %v", err)
+		log.Printf("BLOCKCHAIN ERROR: This usually means network connection failed")
+		return "", "", fmt.Errorf("failed to get nonce (network connection issue?): %w", err)
 	}
+	log.Printf("BLOCKCHAIN: Nonce: %d", nonce)
 
 	// Get gas price from network
+	log.Printf("BLOCKCHAIN: Getting gas price from network...")
 	gasPrice, err := s.client.SuggestGasPrice(ctx)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to get gas price: %w", err)
+		log.Printf("BLOCKCHAIN ERROR: Failed to get gas price: %v", err)
+		log.Printf("BLOCKCHAIN ERROR: This usually means network connection failed")
+		return "", "", fmt.Errorf("failed to get gas price (network connection issue?): %w", err)
 	}
+	log.Printf("BLOCKCHAIN: Gas price: %s wei", gasPrice.String())
 
 	// Estimate gas
 	gasLimit := uint64(300000)
+	log.Printf("BLOCKCHAIN: Gas limit: %d", gasLimit)
 
 	// Create transaction
+	log.Printf("BLOCKCHAIN: Creating blockchain transaction...")
 	tx := types.NewTransaction(
 		nonce,
 		s.contractAddr,
@@ -193,21 +217,29 @@ func (s *BlockchainService) LogTransaction(
 	)
 
 	// Sign transaction
+	log.Printf("BLOCKCHAIN: Signing transaction with EIP155...")
 	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(s.chainID), s.privateKey)
 	if err != nil {
+		log.Printf("BLOCKCHAIN ERROR: Failed to sign transaction: %v", err)
 		return "", "", fmt.Errorf("failed to sign transaction: %w", err)
 	}
+	log.Printf("BLOCKCHAIN: Transaction signed successfully")
 
 	// Send transaction
+	log.Printf("BLOCKCHAIN: Sending transaction to network...")
 	err = s.client.SendTransaction(ctx, signedTx)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to send transaction: %w", err)
+		log.Printf("BLOCKCHAIN ERROR: Failed to send transaction: %v", err)
+		log.Printf("BLOCKCHAIN ERROR: Error type: %T", err)
+		return "", "", fmt.Errorf("failed to send transaction to network: %w", err)
 	}
 
 	txHash := signedTx.Hash().Hex()
 	detailHashHex := "0x" + hex.EncodeToString(detailHash[:])
 
-	log.Printf("Transaction sent: %s, Detail hash: %s", txHash, detailHashHex)
+	log.Printf("BLOCKCHAIN: ========== LogTransaction SUCCESS ==========")
+	log.Printf("BLOCKCHAIN: TX Hash: %s", txHash)
+	log.Printf("BLOCKCHAIN: Detail Hash: %s", detailHashHex)
 
 	return txHash, detailHashHex, nil
 }

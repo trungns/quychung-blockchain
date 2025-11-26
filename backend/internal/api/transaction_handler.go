@@ -221,7 +221,9 @@ func (h *TransactionHandler) ConfirmTransaction(c *gin.Context) {
 
 	// Send transaction to blockchain (async)
 	go func() {
-		log.Printf("DEBUG: Starting blockchain logging for confirmed transaction %s", transaction.ID)
+		log.Printf("DEBUG: ========== Starting blockchain logging for transaction %s ==========", transaction.ID)
+		log.Printf("DEBUG: Treasury ID: %s, Treasury Chain Address: %s", treasury.ID, treasury.ChainAddress)
+		log.Printf("DEBUG: Transaction Type: %s, Confirmed Amount: %.2f", transaction.Type, req.ConfirmedAmount)
 
 		if h.blockchainService == nil {
 			log.Printf("ERROR: Blockchain service is NIL for transaction %s", transaction.ID)
@@ -232,25 +234,39 @@ func (h *TransactionHandler) ConfirmTransaction(c *gin.Context) {
 			return
 		}
 
+		log.Printf("DEBUG: Blockchain service initialized successfully")
+
 		ctx := context.Background()
 		treasuryAddr := common.HexToAddress(treasury.ChainAddress)
 
 		// Use confirmed amount for blockchain
 		transaction.AmountToken = req.ConfirmedAmount
 
-		log.Printf("DEBUG: Logging to blockchain - Treasury: %s, Amount: %.2f, Type: %s",
+		log.Printf("DEBUG: Calling blockchain service LogTransaction...")
+		log.Printf("DEBUG: Parameters - Treasury Address: %s, Amount: %.2f, Type: %s",
 			treasuryAddr.Hex(), req.ConfirmedAmount, transaction.Type)
 
 		txHash, detailHash, err := h.blockchainService.LogTransaction(ctx, treasuryAddr, &transaction)
 		if err != nil {
-			log.Printf("ERROR: Failed to log transaction %s to blockchain: %v", transaction.ID, err)
+			log.Printf("ERROR: ========== BLOCKCHAIN LOG FAILED ==========")
+			log.Printf("ERROR: Transaction %s failed to log to blockchain", transaction.ID)
+			log.Printf("ERROR: Error details: %v", err)
+			log.Printf("ERROR: Error type: %T", err)
 			database.DB.Model(&chainLog).Updates(map[string]interface{}{
-				"status": "failed",
+				"status":       "failed",
+				"error_detail": err.Error(),
 			})
+			// DO NOT rollback to pending - keep as confirmed so we can retry later
+			log.Printf("ERROR: Transaction kept in CONFIRMED status for manual retry")
 			return
 		}
 
+		log.Printf("DEBUG: Blockchain transaction sent successfully!")
+		log.Printf("DEBUG: TX Hash: %s", txHash)
+		log.Printf("DEBUG: Detail Hash: %s", detailHash)
+
 		// Update chain log and transaction status to COMPLETED
+		log.Printf("DEBUG: Updating chain_log and transaction status to COMPLETED...")
 		database.DB.Model(&chainLog).Updates(map[string]interface{}{
 			"tx_hash":     txHash,
 			"detail_hash": detailHash,
@@ -259,7 +275,9 @@ func (h *TransactionHandler) ConfirmTransaction(c *gin.Context) {
 
 		database.DB.Model(&transaction).Update("status", models.TransactionStatusCompleted)
 
-		log.Printf("SUCCESS: Transaction %s logged to blockchain and marked COMPLETED - tx_hash: %s", transaction.ID, txHash)
+		log.Printf("SUCCESS: ========== BLOCKCHAIN LOG COMPLETED ==========")
+		log.Printf("SUCCESS: Transaction %s marked as COMPLETED", transaction.ID)
+		log.Printf("SUCCESS: TX Hash: %s", txHash)
 	}()
 
 	// Reload transaction with relations
