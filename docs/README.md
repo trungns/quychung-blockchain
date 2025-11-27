@@ -1,6 +1,27 @@
 # 📚 Tài liệu Hệ thống Quản lý Quỹ Blockchain
 
+**Phiên bản:** v2.0.0 | **Commit:** 19dc3ad | **Cập nhật:** 2025-11-26
+
 Chào mừng đến với tài liệu hệ thống! Tài liệu được tổ chức theo các mục đích sử dụng khác nhau để dễ tra cứu.
+
+---
+
+## 🎉 Cập nhật mới nhất - v2.0.0 (26/11/2025)
+
+### 🚀 Breaking Changes - Blockchain Workflow Separation
+- ✅ Tách biệt workflow nghiệp vụ và blockchain logging
+- ✅ Gas cost giảm 90% (250k → 23k per transaction)
+- ✅ Transaction "confirmed" ngay lập tức khi thủ quỹ approve
+- ✅ Retry mechanism cho blockchain failures
+
+### 📚 Tài liệu mới
+- **[CHANGELOG](../CHANGELOG.md)** - Lịch sử thay đổi v1.0.0 → v2.0.0
+- **[API Reference](./API_REFERENCE.md)** - API documentation cho blockchain features
+- **[Workflow Changes Summary](./WORKFLOW_CHANGES_SUMMARY.md)** - Chi tiết thay đổi v2.0.0
+
+→ **Xem chi tiết:** [CHANGELOG](../CHANGELOG.md) | [Workflow Changes](./WORKFLOW_CHANGES_SUMMARY.md)
+
+---
 
 ## 📖 Cấu trúc Tài liệu
 
@@ -52,11 +73,12 @@ docs/
 |------|-------|-------------|
 | [Getting Started](guides/GETTING_STARTED.md) | Hướng dẫn setup môi trường development từ đầu | Lần đầu setup project |
 | [Quickstart](guides/QUICKSTART.md) | Chạy nhanh hệ thống trong 5 phút | Muốn test nhanh |
+| [Development Workflow](guides/DEVELOPMENT_WORKFLOW.md) | ⭐ Quy trình development v2.0.0 | Developer mới hoặc sau khi upgrade |
 | [Khởi động Hệ thống](guides/KHOI_DONG_HE_THONG.md) | Hướng dẫn bằng tiếng Việt cho người mới | Người Việt lần đầu dùng |
 | [Google OAuth Setup](guides/GOOGLE_OAUTH_SETUP.md) | Cấu hình Google OAuth cho authentication | Setup OAuth lần đầu |
 | [Testing Guide](guides/TESTING_GUIDE.md) | Hướng dẫn test toàn diện | Trước khi deploy production |
 
-**Đọc theo thứ tự**: Getting Started → Quickstart → Testing Guide
+**Đọc theo thứ tự**: Getting Started → Development Workflow (NEW) → Quickstart → Testing Guide
 
 ### 2. References - Tài liệu Tham khảo
 
@@ -65,14 +87,20 @@ docs/
 | File | Mô tả | Khi nào đọc |
 |------|-------|-------------|
 | [Comprehensive Documentation](references/COMPREHENSIVE_DOCUMENTATION.md) | ⭐ **TÀI LIỆU CHÍNH** - Mọi thứ bạn cần biết (2000+ dòng) | Đọc đầu tiên! |
-| [API Reference](references/API_REFERENCE.md) | Chi tiết tất cả API endpoints với examples | Cần gọi API hoặc thêm endpoint mới |
+| [API Reference](./API_REFERENCE.md) | 🆕 **v2.0.0** - API cho blockchain & retry features | Làm việc với blockchain APIs |
+| [API Reference (Legacy)](references/API_REFERENCE.md) | Chi tiết tất cả API endpoints với examples | Cần gọi API hoặc thêm endpoint mới |
 | [Project Summary](references/PROJECT_SUMMARY.md) | Tổng quan ngắn gọn về project | Giới thiệu project cho người khác |
 | [Structure](references/STRUCTURE.md) | Cấu trúc thư mục và mục đích từng file | Tìm file trong codebase |
 
-**Tài liệu quan trọng nhất**: [Comprehensive Documentation](references/COMPREHENSIVE_DOCUMENTATION.md)
-- Có đầy đủ: Architecture, Use cases, Prompts, Troubleshooting
-- Có sẵn code examples để copy-paste
-- Có checklist tất cả features đã làm
+**Tài liệu quan trọng nhất**:
+1. **[Comprehensive Documentation](references/COMPREHENSIVE_DOCUMENTATION.md)** - Base knowledge
+   - Architecture, Use cases, Prompts, Troubleshooting
+   - Code examples để copy-paste
+   - Checklist tất cả features
+2. **[API Reference (v2.0.0)](./API_REFERENCE.md)** - Blockchain features mới
+   - Retry blockchain API
+   - BlockchainStatus workflow
+   - Smart contract optimization
 
 ### 3. Operations - Vận hành
 
@@ -80,15 +108,18 @@ docs/
 
 | File | Mô tả | Khi nào đọc |
 |------|-------|-------------|
+| [Deployment Guide](./DEPLOYMENT_GUIDE.md) | 🆕 **v2.0.0** - Hướng dẫn deploy với Docker | Deploy v2.0.0 lần đầu |
+| [Workflow Changes Summary](./WORKFLOW_CHANGES_SUMMARY.md) | 🆕 Chi tiết thay đổi v2.0.0 | Hiểu migration v1.x → v2.0.0 |
 | [Deployment Checklist](operations/DEPLOYMENT_CHECKLIST.md) | ⭐ **CHECKLIST DEPLOY** - Từng bước deploy lên production | Mỗi lần deploy |
 | [Build and Deploy](operations/BUILD_AND_DEPLOY.md) | Chi tiết quy trình build Docker và deploy K8s | Setup CI/CD lần đầu |
 | [Redeploy Production](operations/REDEPLOY_PRODUCTION.md) | Hướng dẫn redeploy sau khi có changes | Deploy lại sau update |
 | [Hardhat Migration](operations/HARDHAT_MIGRATION.md) | Migration từ Hardhat sang production blockchain | Deploy smart contract |
 
-**Quy trình deploy chuẩn**:
-1. Đọc [Deployment Checklist](operations/DEPLOYMENT_CHECKLIST.md)
-2. Follow từng bước
-3. Nếu gặp vấn đề → Xem [Troubleshooting](#4-troubleshooting---debug)
+**Quy trình deploy v2.0.0**:
+1. Đọc [CHANGELOG](../CHANGELOG.md) - Hiểu breaking changes
+2. Đọc [Workflow Changes](./WORKFLOW_CHANGES_SUMMARY.md) - Chi tiết migration
+3. Follow [Deployment Guide](./DEPLOYMENT_GUIDE.md) - Build & deploy
+4. Nếu gặp vấn đề → Xem [Troubleshooting](#4-troubleshooting---debug)
 
 ### 4. Troubleshooting - Debug
 
@@ -96,13 +127,21 @@ docs/
 
 | File | Mô tả | Khi nào đọc |
 |------|-------|-------------|
+| [API Reference - Troubleshooting](./API_REFERENCE.md#troubleshooting) | 🆕 **v2.0.0** - Fix blockchain issues | Blockchain logging failed |
+| [Blockchain Logging Diagnosis](./BLOCKCHAIN_LOGGING_DIAGNOSIS.md) | Chẩn đoán lỗi blockchain trên production | Production blockchain issues |
 | [Debug Transaction Stuck](troubleshooting/DEBUG_TRANSACTION_STUCK.md) | Transaction bị stuck ở "pending" | Transaction không confirm |
 | [Quick Fix Summary](troubleshooting/QUICK_FIX_SUMMARY.md) | Tổng hợp các fix nhanh đã làm | Tham khảo solutions cũ |
 | [Quick Fix OAuth](troubleshooting/QUICK_FIX_OAUTH.md) | Fix lỗi Google OAuth redirect | Lỗi OAuth redirect_uri_mismatch |
 | [Fix Frontend Update UI](troubleshooting/FIX_FRONTEND_UPDATE_UI.md) | Fix UI không update sau transaction | UI không real-time update |
 | [Fixes](troubleshooting/FIXES.md) | Lịch sử các fixes đã làm | Tham khảo historical fixes |
 
-**Khi gặp lỗi**:
+**Khi gặp lỗi blockchain (v2.0.0)**:
+1. Xem [API Reference - Troubleshooting](./API_REFERENCE.md#troubleshooting)
+2. Kiểm tra ChainLog status và error_detail
+3. Dùng retry blockchain API nếu cần
+4. Vẫn không được → Xem [Blockchain Logging Diagnosis](./BLOCKCHAIN_LOGGING_DIAGNOSIS.md)
+
+**Khi gặp lỗi khác**:
 1. Xem [Comprehensive Documentation - Troubleshooting](references/COMPREHENSIVE_DOCUMENTATION.md#troubleshooting)
 2. Nếu không có → Tìm trong thư mục này
 3. Vẫn không có → Tạo issue mới và document fix
@@ -287,4 +326,25 @@ Khi thêm tính năng mới:
 
 ---
 
-*Documentation Structure - Last Updated: 2025-01-19*
+---
+
+## 📦 v2.0.0 Migration Checklist
+
+Nếu bạn đang upgrade từ v1.x sang v2.0.0:
+
+- [ ] Đọc [CHANGELOG](../CHANGELOG.md) - Hiểu breaking changes
+- [ ] Đọc [Workflow Changes Summary](./WORKFLOW_CHANGES_SUMMARY.md) - Chi tiết kỹ thuật
+- [ ] Backup database trước khi migration
+- [ ] Chạy database migration scripts
+- [ ] Deploy smart contract mới
+- [ ] Build & deploy backend với Docker
+- [ ] Test retry blockchain functionality
+- [ ] Verify balance/reports calculation
+- [ ] Update frontend dependencies
+- [ ] Test end-to-end workflow
+
+→ Chi tiết: [CHANGELOG - Migration Guide](../CHANGELOG.md#migration-guide)
+
+---
+
+*Documentation Structure - Last Updated: 2025-11-26 (v2.0.0)*
